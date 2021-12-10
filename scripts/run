@@ -1,0 +1,82 @@
+#!/bin/bash
+export HOME=/massbit/massbitroute/app/src/tmp
+
+GRAFANA_VERSION=v8.2.1
+PROMETHEUS_VERSION=v2.30.3
+portal_dir=/massbit/massbitroute/app/src/sites/portal
+gwman_dir=/massbit/massbitroute/app/src/sites/services/gwman
+gw_dir=/massbit/massbitroute/app/src/sites/services/gateway
+cmd_server=/massbit/massbitroute/app/src/cmd_server
+gdnsd="/massbit/massbitroute/app/gbc/bin/.asdf/installs/gdnsd/v3.8.0/sbin/gdnsd -c $gwman_dir"
+nginx="/massbit/massbitroute/app/src/bin/openresty/nginx/sbin/nginx -c /massbit/massbitroute/app/src/tmp/nginx.conf"
+
+_supervisor() {
+	cat <<EOF >/etc/supervisor/conf.d/mbr_portal.conf
+[program:mbr_portal]
+command=/massbit/massbitroute/app/src/start_server
+EOF
+}
+_update_prometheus() {
+	(
+		cat $portal_dir/etc/prometheus/_stat.yml
+		awk '/[0-9a-zA-Z]{24}\.gw.mbr / || /[0-9a-zA-Z]{24}\.node.mbr / {printf("          - %s.massbitroute.com\n",$1)}' $gwman_dir/zones/massbitroute.com
+	) >$portal_dir/etc/prometheus/stat.yml
+	#	$cmd_server restart prometheus
+}
+
+_service_grafana() {
+	SITE_ROOT=$1
+	mkdir -p $SITE_ROOT/data/grafana
+	val=$(echo $SITE_ROOT | sed 's/\//\\\//g')
+	sed "s/_SITE_ROOT_/$val/g" $SITE_ROOT/etc/grafana/stat_tmpl.ini >$SITE_ROOT/etc/grafana/stat.ini
+	ASDF=$SITE_ROOT/bin/.asdf/installs
+	GRAFANA_DIR=$ASDF/grafana/$GRAFANA_VERSION
+	exec $GRAFANA_DIR/bin/grafana-server -config $SITE_ROOT/etc/grafana/stat.ini -homepath $GRAFANA_DIR
+}
+_service_prometheus_node() {
+	SITE_ROOT=$1
+	mkdir -p $SITE_ROOT/data/prometheus_node
+	ASDF=$SITE_ROOT/bin/.asdf/installs
+	PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSION
+	exec $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$SITE_ROOT/etc/prometheus/stat_node.yml --web.listen-address="127.0.0.1:44448" --web.external-url http://127.0.0.1:44448/__internal_prometheus --web.enable-lifecycle --storage.tsdb.path $SITE_ROOT/data/prometheus_node
+}
+
+_service_prometheus_gw() {
+	SITE_ROOT=$1
+	mkdir -p $SITE_ROOT/data/prometheus_gw
+	ASDF=$SITE_ROOT/bin/.asdf/installs
+	PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSION
+	exec $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$SITE_ROOT/etc/prometheus/stat_gw.yml --web.listen-address="127.0.0.1:44449" --web.external-url http://127.0.0.1:44449/__internal_prometheus --web.enable-lifecycle --storage.tsdb.path $SITE_ROOT/data/prometheus_gw
+}
+
+_git_config() {
+	git config --global user.name "Vu Tran"
+	git config --global user.email "baysao@gmail.com"
+
+	# 	cat >$HOME/.gitconfig <<EOF
+	# [user]
+	# 	email = baysao@gmail.com
+	# 	name = Vu Tran
+	# EOF
+}
+_reload() {
+	/massbit/massbitroute/app/src/cmd_server nginx -s reload
+	/massbit/massbitroute/app/src/cmd_server update
+}
+
+_pull() {
+	dir=$1
+	cd $dir
+	git pull | grep -i "updating"
+	if [ $? -eq 0 ]; then
+		_reload
+	fi
+}
+loop() {
+	while true; do
+		$@
+		sleep 1
+	done
+
+}
+$@
