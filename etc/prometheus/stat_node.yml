@@ -1,3 +1,4 @@
+# Prometheus pull job for Node
 scrape_configs:
   - job_name: stat_vhost
     honor_labels: true
@@ -11,5 +12,4 @@ scrape_configs:
     #     replacement: "${1}"
     static_configs:
       - targets:
-          - cba0077a-79e2-4062-b1cc-23c0a8f58725.gw.mbr.massbitroute.com
-          - 8c15086e-6354-4aa7-b3ce-a829d2941288.gw.mbr.massbitroute.com
+
