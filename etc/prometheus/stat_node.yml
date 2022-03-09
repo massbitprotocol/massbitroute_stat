@@ -1,6 +1,8 @@
-# Prometheus pull job for Node
 scrape_configs:
   - job_name: stat_vhost
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
     honor_labels: true
     metrics_path: /__internal_status_vhost/format/prometheus
     scrape_interval: 10s
@@ -12,4 +14,42 @@ scrape_configs:
     #     replacement: "${1}"
     static_configs:
       - targets:
-
+          - 41a5821c-de00-4fd5-be6f-a892d5470668.node.mbr.massbitroute.com
+          - b4c0106c-2b5c-4dec-8bf6-fff0e8a60f7f.node.mbr.massbitroute.com
+          - 4a46395a-07c0-4fe1-9d14-ed85fc00a3ce.node.mbr.massbitroute.com
+          - f15c99b4-bbfd-4d08-9e48-2f3c7edf0410.node.mbr.massbitroute.com
+          - 60a86f07-cf6c-454c-a196-201b4dbd527e.node.mbr.massbitroute.com
+          - 418edf42-c5f5-4bfe-9892-f667d65b041e.node.mbr.massbitroute.com
+          - 8b77ee8c-44a3-4ef4-bdb8-d236365ef008.node.mbr.massbitroute.com
+          - 10a13e75-1b8b-450a-9565-1f8e48c52008.node.mbr.massbitroute.com
+          - 2b343d26-11cb-484d-9c9d-5a412c233fc4.node.mbr.massbitroute.com
+          - 5706fbef-272d-478a-a044-6ef3c58b7487.node.mbr.massbitroute.com
+          - 1b84df65-8fc3-4587-82fb-9c48cd4f3d57.node.mbr.massbitroute.com
+          - d3909a01-3a7a-487c-9776-fd05cc7ac126.node.mbr.massbitroute.com
+          - 1c25082c-afc6-4534-a13a-09415865f9f8.node.mbr.massbitroute.com
+          - 266ff816-2a0c-4840-9b18-a1bfb6434815.node.mbr.massbitroute.com
+          - 9508a610-4308-4793-9e5a-7389bf4a4628.node.mbr.massbitroute.com
+          - 0a819c28-a41d-4c76-bdad-ded408b304ea.node.mbr.massbitroute.com
+          - 7c384367-67e1-4ea0-95bc-cf7b53d231a1.node.mbr.massbitroute.com
+          - 338addf8-65e2-4039-9339-996eec964fa7.node.mbr.massbitroute.com
+          - 966ace25-21d1-43fe-8b92-1d4683185db6.node.mbr.massbitroute.com
+          - 69e164d1-2d71-4c6f-ab50-6fc929a9d995.node.mbr.massbitroute.com
+          - 03a46920-71d1-48be-a1b0-0d52d9c69f98.node.mbr.massbitroute.com
+          - 8f2f46d4-c2b3-45d5-80d3-eb6f549c376f.node.mbr.massbitroute.com
+          - 009d954d-cb5a-45c1-b989-999dd3304cf1.node.mbr.massbitroute.com
+          - 398591f8-65a1-4107-9a1b-4fbd8cdad5fa.node.mbr.massbitroute.com
+          - 5c5114a4-7d3a-4908-bbe8-ab0a95f52249.node.mbr.massbitroute.com
+          - deda6c70-da37-45a9-b789-5e5e74b9d541.node.mbr.massbitroute.com
+          - 90c5a478-dae5-4d4b-8994-d105fe05f7dc.node.mbr.massbitroute.com
+          - f1dc9700-1160-4509-abd5-15ccdc53bf3b.node.mbr.massbitroute.com
+          - a8525579-ef89-441a-83f4-06b8ccc0f5c7.node.mbr.massbitroute.com
+          - e428b003-4c90-4275-bca9-002e7555a80b.node.mbr.massbitroute.com
+          - a257a09e-6712-4950-b5a4-da7dc9262104.node.mbr.massbitroute.com
+          - e9657c83-41c2-4de1-a6f5-2ecafe8a1415.node.mbr.massbitroute.com
+          - 509be216-0cf6-4bf6-914a-ef37e48537d2.node.mbr.massbitroute.com
+          - b96f5fc7-cee8-485a-823f-440482542bed.node.mbr.massbitroute.com
+          - a29798a9-c0e4-4e8c-835c-5fece72cac3f.node.mbr.massbitroute.com
+          - ba7afe13-6d65-4018-985c-191ba167c995.node.mbr.massbitroute.com
+          - 6c55d5bc-fd56-4808-8507-ad6040b64af0.node.mbr.massbitroute.com
+          - 5dc50f58-d378-41a6-8df4-a2a39da7790a.node.mbr.massbitroute.com
+          - d67770e5-3891-42c1-afe4-0c49ebfdfd16.node.mbr.massbitroute.com
