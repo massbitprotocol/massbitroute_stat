@@ -131,11 +131,10 @@ _update_listid_node() {
 _update_listid() {
 	_update_listid_gw
 	_update_listid_node
-
 }
 
 _rebuild_conf() {
-
+	_update_listid
 	_dir=$SITE_ROOT/etc/prometheus
 
 	_file_ok=$SITE_ROOT/etc/prometheus/stat_gw.yml
