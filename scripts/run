@@ -36,6 +36,7 @@ _git_clone() {
 	if [ -d "$_dir" ]; then rm -rf $_dir; fi
 	mkdir -p $_dir
 	git clone $_url $_dir
+	git -C $_dir remote set-url origin $_url
 }
 _install() {
 
