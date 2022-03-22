@@ -112,8 +112,25 @@ _update_listid_gw() {
 	mv $tmpd/*.yml $_dir/stat_gw/
 	rm -rf $tmpd
 }
+_update_listid_node() {
+	_dir=$SITE_ROOT/etc/prometheus
+	mkdir -p $_dir/stat_node
+	tmpd=$(mktemp -d)
+	curl -sk https://dapi.${DOMAIN}/deploy/info/node/listid | while read id user_id blockchain network _remain; do
+		if [ -z "$id" ]; then continue; fi
+		echo "          - ${id}.node.mbr.${DOMAIN}" $tmpd/${blockchain}-${network}.yml
+		echo "          - ${id}.node.mbr.${DOMAIN}" >>$tmpd/${blockchain}-${network}.yml
+	done
+	echo rm $_dir/stat_node/*.yml
+	rm $_dir/stat_node/*.yml
+	echo mv $tmpd/*.yml $_dir/stat_node/
+	cat $tmpd/*.yml
+	mv $tmpd/*.yml $_dir/stat_node/
+	rm -rf $tmpd
+}
 _update_listid() {
 	_update_listid_gw
+	_update_listid_node
 
 }
 
