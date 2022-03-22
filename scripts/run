@@ -44,7 +44,7 @@ _install() {
 	_git_clone https://github.com/massbitprotocol/massbitroute_asdf.git /massbit/massbitroute/app/gbc/bin/.asdf
 	_git_clone https://github.com/massbitprotocol/massbitroute_mkagent.git $SITE_ROOT/etc/mkagent
 
-	if [ "$SITE_ROOT/scripts/install_private.sh" ]; then
+	if [ -f "$SITE_ROOT/scripts/install_private.sh" ]; then
 		bash $SITE_ROOT/scripts/install_private.sh
 	fi
 
