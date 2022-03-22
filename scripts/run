@@ -97,6 +97,8 @@ loop() {
 	done
 }
 _update_listid_gw() {
+	_dir=$SITE_ROOT/etc/prometheus
+	mkdir -p $_dir/stat_gw
 	tmpd=$(mktemp -d)
 	_dirty=0
 	curl -sk https://dapi.${DOMAIN}/deploy/info/gateway/listid | while read id user_id blockchain network _remain; do
@@ -111,8 +113,6 @@ _update_listid_gw() {
 	rm -rf $tmpd
 }
 _update_listid() {
-	_dir=$SITE_ROOT/etc/prometheus
-	mkdir -p $_dir/stat_gw $_dir/$stat_node
 	_update_listid_gw
 
 }
