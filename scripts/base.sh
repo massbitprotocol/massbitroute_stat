@@ -1,3 +1,4 @@
+#!/bin/bash
 _git_clone() {
 	_url=$1
 	_dir=$2

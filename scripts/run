@@ -121,12 +121,6 @@ _monitor() {
 	is_reload=0
 	echo mbr-stat >vars/TYPE
 
-	if [ ! -d "$SITE_ROOT/etc/mkagent/.git" ]; then
-		mkdir -p $SITE_ROOT/etc/mkagent
-		git clone http://mbr_gateway:6a796299bb72357770735a79019612af228586e7@git.massbitroute.com/massbitroute/mkagent.git $SITE_ROOT/etc/mkagent
-		is_reload=1
-	fi
-
 	for d in /etc/letsencrypt /massbit/massbitroute/app/gbc $SITE_ROOT $SITE_ROOT/etc/mkagent; do
 		mkdir -p $d
 		git -C $d pull | grep -i "updating"
