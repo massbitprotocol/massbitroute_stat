@@ -104,10 +104,13 @@ _update_listid_gw() {
 	curl -sk https://dapi.${DOMAIN}/deploy/info/gateway/listid | while read id user_id blockchain network _remain; do
 		if [ -z "$id" ]; then continue; fi
 		_dirty=1
+		echo "          - ${id}.gw.mbr.${DOMAIN}" $tmpd/${blockchain}-${network}.yml
 		echo "          - ${id}.gw.mbr.${DOMAIN}" >>$tmpd/${blockchain}-${network}.yml
 	done
 	if [ $_dirty -eq 1 ]; then
+		echo rm $_dir/stat_gw/*.yml
 		rm $_dir/stat_gw/*.yml
+		echo mv $tmpd/*.yml $_dir/stat_gw/
 		mv $tmpd/*.yml $_dir/stat_gw/
 	fi
 	rm -rf $tmpd
