@@ -9,6 +9,7 @@ PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSION
 
 export HOME=/tmp
 cd $SITE_ROOT
+
 #source $SITE_ROOT/.env
 git="git -C $SITE_ROOT"
 type="stat"
@@ -19,6 +20,8 @@ mbr_cli="$dir/mbr"
 script_run="$dir/scripts/run"
 cmd="$dir/cmd_server"
 nginx="$cmd nginx"
+source $SITE_ROOT/scripts/base.sh
+
 _git_config() {
 	$git config --global user.name "Vu Tran"
 	$git config --global user.email "baysao@gmail.com"
@@ -30,14 +33,14 @@ _reload() {
 	$cmd _update
 }
 
-_git_clone() {
-	_url=$1
-	_dir=$2
-	if [ -d "$_dir" ]; then rm -rf $_dir; fi
-	mkdir -p $_dir
-	git clone $_url $_dir
-	git -C $_dir remote set-url origin $_url
-}
+# _git_clone() {
+# 	_url=$1
+# 	_dir=$2
+# 	if [ -d "$_dir" ]; then rm -rf $_dir; fi
+# 	mkdir -p $_dir
+# 	git clone $_url $_dir
+# 	# git -C $_dir remote set-url origin $_url
+# }
 _install() {
 
 	_git_clone https://github.com/massbitprotocol/massbitroute_gbc.git /massbit/massbitroute/app/gbc
