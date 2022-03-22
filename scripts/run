@@ -105,7 +105,7 @@ _update_listid_gw() {
 		echo "          - ${id}.gw.mbr.${DOMAIN}" >>$tmpd/${blockchain}-${network}.yml
 	done
 	if [ $_dirty -eq 1 ]; then
-		rm $tmpd/*.yml
+		rm $_dir/stat_gw/*.yml
 		mv $tmpd/*.yml $_dir/stat_gw/
 	fi
 	rm -rf $tmpd
