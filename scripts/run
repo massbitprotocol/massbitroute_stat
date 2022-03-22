@@ -3,6 +3,11 @@ GRAFANA_VERSION=v8.2.1
 PROMETHEUS_VERSION=v2.30.3
 
 SITE_ROOT=$(realpath $(dirname $(realpath $0))/..)
+
+env=$(cat $SITE_ROOT/vars/ENV)
+source $SITE_ROOT/.env.$env
+source $SITE_ROOT/scripts/base.sh
+
 ASDF=$SITE_ROOT/bin/.asdf/installs
 GRAFANA_DIR=$ASDF/grafana/$GRAFANA_VERSION
 PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSION
@@ -20,7 +25,6 @@ mbr_cli="$dir/mbr"
 script_run="$dir/scripts/run"
 cmd="$dir/cmd_server"
 nginx="$cmd nginx"
-source $SITE_ROOT/scripts/base.sh
 
 _git_config() {
 	$git config --global user.name "Vu Tran"
@@ -92,6 +96,27 @@ loop() {
 		sleep 3
 	done
 }
+_update_listid_gw() {
+	tmpd=$(mktemp -d)
+	_dirty=0
+	curl -sk https://dapi.${DOMAIN}/deploy/info/gateway/listid | while read id user_id blockchain network _remain; do
+		if [ -z "$id" ]; then continue; fi
+		_dirty=1
+		echo "          - ${id}.gw.mbr.${DOMAIN}" >>$tmpd/${blockchain}-${network}.yml
+	done
+	if [ $_dirty -eq 1 ]; then
+		rm $tmpd/*.yml
+		mv $tmpd/*.yml $_dir/stat_gw/
+	fi
+	rm -rf $tmpd
+}
+_update_listid() {
+	_dir=$SITE_ROOT/etc/prometheus
+	mkdir -p $_dir/stat_gw $_dir/$stat_node
+	_update_listid_gw
+
+}
+
 _rebuild_conf() {
 
 	_dir=$SITE_ROOT/etc/prometheus
