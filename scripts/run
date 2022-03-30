@@ -1,14 +1,10 @@
 #!/bin/bash
-
+TYPE="stat"
 SITE_ROOT=$(realpath $(dirname $(realpath $0))/..)
 export HOME=$SITE_ROOT
 cd $SITE_ROOT
 source $SITE_ROOT/scripts/base.sh
 _load_env $SITE_ROOT
-
-# env=$(cat $SITE_ROOT/vars/ENV)
-# source $SITE_ROOT/.env.$env
-# source $SITE_ROOT/scripts/base.sh
 
 GRAFANA_VERSION=v8.2.1
 PROMETHEUS_VERSION=v2.30.3
@@ -19,18 +15,8 @@ PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSION
 REPOS="/etc/letsencrypt|$GIT_PRIVATE_READ_URL/massbitroute/ssl.git|master \
 /massbit/massbitroute/app/gbc|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_gbc.git \
 /massbit/massbitroute/app/gbc/bin/.asdf|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_asdf.git|master \
-$SITE_ROOT|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_stat.git \
+$SITE_ROOT|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_${TYPE}.git \
 $SITE_ROOT/etc/mkagent|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_mkagent.git"
-
-# git="git -C $SITE_ROOT"
-TYPE="stat"
-# service_dir=/massbit/massbitroute/app/src/sites/services
-# dir=$service_dir/$TYPE
-# mkdir -p $dir
-# mbr_cli="$dir/mbr"
-# script_run="$dir/scripts/run"
-# cmd="$dir/cmd_server"
-# nginx="$cmd nginx"
 
 _install() {
 	_git_config
@@ -48,31 +34,24 @@ _install() {
 	cp supervisor.conf /etc/supervisor/conf.d/${TYPE}.conf
 	systemctl enable supervisor
 	systemctl start supervisor
-	supervisorctl update
+	# supervisorctl update
 
 }
 
 _service_grafana() {
 	mkdir -p $SITE_ROOT/data/grafana
-	# val=$(echo $SITE_ROOT | sed 's/\//\\\//g')
-	# sed "s/_SITE_ROOT_/$val/g" $SITE_ROOT/etc/grafana/stat_tmpl.ini >$SITE_ROOT/etc/grafana/stat.ini
-
 	exec $GRAFANA_DIR/bin/grafana-server -config $SITE_ROOT/etc/grafana/stat.ini -homepath $GRAFANA_DIR
 }
 
 # service config for Prometheus Node
 _service_prometheus_node() {
 	mkdir -p $SITE_ROOT/data/prometheus_node
-	# ASDF=$SITE_ROOT/bin/.asdf/installs
-	# PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSION
 	exec $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$SITE_ROOT/etc/prometheus/stat_node.yml --web.listen-address="127.0.0.1:44448" --web.external-url http://127.0.0.1:44448/__internal_prometheus_node --web.enable-lifecycle --storage.tsdb.path $SITE_ROOT/data/prometheus_node
 }
 
 # service config for Prometheus Gateway
 _service_prometheus_gw() {
 	mkdir -p $SITE_ROOT/data/prometheus_gw
-	# ASDF=$SITE_ROOT/bin/.asdf/installs
-	# PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSION
 	exec $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$SITE_ROOT/etc/prometheus/stat_gw.yml --web.listen-address="127.0.0.1:44449" --web.external-url http://127.0.0.1:44449/__internal_prometheus_gw --web.enable-lifecycle --storage.tsdb.path $SITE_ROOT/data/prometheus_gw
 }
 
@@ -147,7 +126,7 @@ _reload() {
 }
 
 _monitor() {
-
+	echo mbr-stat >vars/TYPE
 	_update_sources $REPOS
 	is_reload=$?
 	if [ $is_reload -ne 0 ]; then
