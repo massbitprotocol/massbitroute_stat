@@ -4,7 +4,7 @@ SITE_ROOT=$(realpath $(dirname $(realpath $0))/..)
 _load_env() {
 	ROOT_DIR=$1
 	cd $ROOT_DIR
-	if [ -n "$MBR_ENV" ]; then
+	if [ -z "$MBR_ENV" ]; then
 		if [ -f "$ROOT_DIR/.env" ]; then
 			source $ROOT_DIR/.env
 		fi
