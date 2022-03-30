@@ -33,6 +33,7 @@ TYPE="stat"
 # nginx="$cmd nginx"
 
 _install() {
+	_git_config
 	for _pathgit in $REPOS; do
 		_path=$(echo $_pathgit | cut -d'|' -f1)
 		_url=$(echo $_pathgit | cut -d'|' -f2)
