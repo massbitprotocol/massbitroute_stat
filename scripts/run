@@ -139,6 +139,7 @@ _monitor() {
 }
 
 _run() {
+	rm -rf $SITE_ROOT/tmp/*
 	$SITE_ROOT/start_server
 }
 
