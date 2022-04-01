@@ -2,9 +2,14 @@
 TYPE="stat"
 SITE_ROOT=$(realpath $(dirname $(realpath $0))/..)
 export HOME=$SITE_ROOT
-cd $SITE_ROOT
+
+bash $SITE_ROOT/cmd_server _env
+source $SITE_ROOT/.env_raw
 source $SITE_ROOT/scripts/base.sh
-_load_env $SITE_ROOT
+
+cd $SITE_ROOT
+
+# _load_env $SITE_ROOT
 
 GRAFANA_VERSION=v8.2.1
 PROMETHEUS_VERSION=v2.30.3
