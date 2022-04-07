@@ -14,6 +14,9 @@ local _config = {
 command=/bin/bash _SITE_ROOT_/../mkagent/agents/push.sh _SITE_ROOT_/../mkagent
 autorestart=true
 redirect_stderr=true
+stopasgroup=true
+killasgroup=true
+stopsignal=INT
 stdout_logfile=_SITE_ROOT_/../mkagent/logs/monitor_client.log
     ]]
     },
@@ -24,6 +27,9 @@ stdout_logfile=_SITE_ROOT_/../mkagent/logs/monitor_client.log
 command=/bin/bash _SITE_ROOT_/scripts/run loop _service_prometheus_gw _SITE_ROOT_ v1
 autorestart=true
 redirect_stderr=true
+stopasgroup=true
+killasgroup=true
+stopsignal=INT
 stdout_logfile=_SITE_ROOT_/logs/stat_prometheus_gw.log
 
 ; Prometheus for Community Node
@@ -31,12 +37,18 @@ stdout_logfile=_SITE_ROOT_/logs/stat_prometheus_gw.log
 command=/bin/bash _SITE_ROOT_/scripts/run loop _service_prometheus_node _SITE_ROOT_ v1
 autorestart=true
 redirect_stderr=true
+stopasgroup=true
+killasgroup=true
+stopsignal=INT
 stdout_logfile=_SITE_ROOT_/logs/stat_prometheus_node.log
 
 [program:stat_grafana]
 command=/bin/bash _SITE_ROOT_/scripts/run loop _service_grafana _SITE_ROOT_ v1
 autorestart=true
 redirect_stderr=true
+stopasgroup=true
+killasgroup=true
+stopsignal=INT
 stdout_logfile=_SITE_ROOT_/logs/stat_grafana.log
     ]]
 }
