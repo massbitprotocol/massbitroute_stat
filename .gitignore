@@ -1,4 +1,3 @@
-src/env.lua
 env/
 /db/
 /logs/
