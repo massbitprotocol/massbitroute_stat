@@ -44,7 +44,8 @@ $SITE_ROOT/env|$GIT_PRIVATE_READ_URL/massbitroute/env.git|$SSL_BRANCH \
 }
 _repo
 
-_init() {
+_prepare() {
+	echo "Prepare"
 	source $SITE_ROOT/.env
 	_git_clone $GIT_PUBLIC_URL/massbitprotocol/massbitroute_gbc.git $mbr_root/gbc
 	bash $SITE_ROOT/cmd_server _env
@@ -52,9 +53,6 @@ _init() {
 	_repo
 }
 
-_prepare() {
-	echo "Prepare"
-}
 _install_repos() {
 	_repo
 	for _pathgit in $REPOS; do
@@ -68,7 +66,6 @@ _install() {
 	mkdir -p $SITE_ROOT/logs $SITE_ROOT/db
 	_git_config
 	_prepare
-	_init
 	_install_repos
 
 	ln -sf /massbit/massbitroute/app/gbc /massbit/massbitroute/app/src/gbc
