@@ -11,6 +11,9 @@ source $SITE_ROOT/scripts/base.sh
 
 cd $SITE_ROOT
 
+mbr_root=/massbit/massbitroute/app
+service_dir=$mbr_root/src/sites/services
+
 GRAFANA_VERSION=v8.2.1
 PROMETHEUS_VERSION=v2.30.3
 ASDF=$SITE_ROOT/bin/.asdf/installs
