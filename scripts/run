@@ -1,15 +1,15 @@
 #!/bin/bash
 TYPE="stat"
+
 SITE_ROOT=$(realpath $(dirname $(realpath $0))/..)
+
 export HOME=$SITE_ROOT
 
-bash $SITE_ROOT/cmd_server _env
-source $SITE_ROOT/.env_raw
+if [ -e "$SITE_ROOT/cmd_server" ]; then bash $SITE_ROOT/cmd_server _env; fi
+if [ -f "$SITE_ROOT/.env_raw" ]; then source $SITE_ROOT/.env_raw; fi
 source $SITE_ROOT/scripts/base.sh
 
 cd $SITE_ROOT
-
-# _load_env $SITE_ROOT
 
 GRAFANA_VERSION=v8.2.1
 PROMETHEUS_VERSION=v2.30.3
@@ -17,24 +17,56 @@ ASDF=$SITE_ROOT/bin/.asdf/installs
 GRAFANA_DIR=$ASDF/grafana/$GRAFANA_VERSION
 PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSION
 
-REPOS="/etc/letsencrypt|$GIT_PRIVATE_READ_URL/massbitroute/ssl.git|master \
-/massbit/massbitroute/app/gbc|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_gbc.git \
-/massbit/massbitroute/app/gbc/bin/.asdf|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_asdf.git|master \
-$SITE_ROOT|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_${TYPE}.git \
-$SITE_ROOT/etc/mkagent|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_mkagent.git"
+export MBRAPP_BRANCH=${MBRAPP_BRANCH:-dev}
+export ASDF_BRANCH=${ASDF_BRANCH:-dev}
+export SSL_BRANCH=${SSL_BRANCH:-dev}
+export GWMAN_BRANCH=${GWMAN_BRANCH:-dev}
+export NODE_BRANCH=${NODE_BRANCH:-dev}
+export GATEWAY_BRANCH=${GATEWAY_BRANCH:-dev}
+export STAT_BRANCH=${STAT_BRANCH:-dev}
+export MONITOR_BRANCH=${MONITOR_BRANCH:-dev}
+export API_BRANCH=${API_BRANCH:-dev}
+export SESSION_BRANCH=${SESSION_BRANCH:-dev}
+export GIT_BRANCH=${GIT_BRANCH:-dev}
+export MKAGENT_BRANCH=${MKAGENT_BRANCH:-dev}
+
+_repo() {
+	REPOS="\
+$SITE_ROOT/env|$GIT_PRIVATE_READ_URL/massbitroute/env.git|$SSL_BRANCH \
+/etc/letsencrypt|$GIT_PRIVATE_READ_URL/massbitroute/ssl.git|$SSL_BRANCH \
+ $mbr_root/gbc/bin/.asdf|https://github.com/massbitprotocol/massbitroute_asdf|$ASDF_BRANCH \
+  $service_dir/stat|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_stat.git|$STAT_BRANCH \
+  $service_dir/mkagent|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_mkagent.git|$MKAGENT_BRANCH \
+"
+}
+_repo
+
+_init() {
+	source $SITE_ROOT/.env
+	_git_clone $GIT_PUBLIC_URL/massbitprotocol/massbitroute_gbc.git $mbr_root/gbc
+	bash $SITE_ROOT/cmd_server _env
+	source $SITE_ROOT/.env_raw
+	_repo
+}
 
 _prepare() {
 	echo "Prepare"
 }
-_install() {
-	mkdir -p $SITE_ROOT/logs $SITE_ROOT/db
-	_git_config
+_install_repos() {
+	_repo
 	for _pathgit in $REPOS; do
 		_path=$(echo $_pathgit | cut -d'|' -f1)
 		_url=$(echo $_pathgit | cut -d'|' -f2)
 		_branch=$(echo $_pathgit | cut -d'|' -f3)
 		_git_clone $_url $_path $_branch
 	done
+}
+_install() {
+	mkdir -p $SITE_ROOT/logs $SITE_ROOT/db
+	_git_config
+	_prepare
+	_init
+	_install_repos
 
 	ln -sf /massbit/massbitroute/app/gbc /massbit/massbitroute/app/src/gbc
 	ln -sf /massbit/massbitroute/app/gbc/bin/openresty /usr/local/openresty
