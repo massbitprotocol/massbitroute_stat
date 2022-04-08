@@ -6,3 +6,5 @@ env/
 /data/
 etc/prometheus/
 vars/
+/.env_raw
+src/env.lua
