@@ -39,6 +39,7 @@ $SITE_ROOT/env|$GIT_PRIVATE_READ_URL/massbitroute/env.git|$SSL_BRANCH \
 /etc/letsencrypt|$GIT_PRIVATE_READ_URL/massbitroute/ssl.git|$SSL_BRANCH \
  $mbr_root/gbc/bin/.asdf|https://github.com/massbitprotocol/massbitroute_asdf|$ASDF_BRANCH \
   $service_dir/stat|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_stat.git|$STAT_BRANCH \
+  $service_dir/stat/etc/conf|https://$GIT_STATDEPLOY_WRITE@$GIT_PRIVATE_DOMAIN/massbitroute/statdeploy.git|$STAT_BRANCH \
   $service_dir/mkagent|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_mkagent.git|$MKAGENT_BRANCH \
 "
 }
