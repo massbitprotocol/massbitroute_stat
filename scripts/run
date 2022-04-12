@@ -47,6 +47,9 @@ _repo
 
 _prepare() {
 	echo "Prepare"
+
+	_git_clone $GIT_PRIVATE_READ_URL/massbitroute/env.git /massbit/massbitroute/app/src/env $BRANCH
+
 	source $SITE_ROOT/.env
 	_git_clone $GIT_PUBLIC_URL/massbitprotocol/massbitroute_gbc.git $mbr_root/gbc
 	bash $SITE_ROOT/cmd_server _env
