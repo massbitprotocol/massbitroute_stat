@@ -63,7 +63,7 @@ _install_repos() {
 	done
 }
 _install() {
-	mkdir -p $SITE_ROOT/logs $SITE_ROOT/db
+	mkdir -p $SITE_ROOT/logs $SITE_ROOT/d $SITE_ROOT/etc $SITE_ROOT/tmp
 	_git_config
 	_prepare
 	_install_repos
