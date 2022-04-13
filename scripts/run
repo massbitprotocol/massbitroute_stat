@@ -20,6 +20,8 @@ ASDF=$SITE_ROOT/bin/.asdf/installs
 GRAFANA_DIR=$ASDF/grafana/$GRAFANA_VERSION
 PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSION
 
+export MBR_ENV=${MBR_ENV:-dev}
+export BRANCH=${BRANCH:-dev}
 export MBRAPP_BRANCH=${MBRAPP_BRANCH:-dev}
 export ASDF_BRANCH=${ASDF_BRANCH:-dev}
 export SSL_BRANCH=${SSL_BRANCH:-dev}
@@ -35,8 +37,9 @@ export MKAGENT_BRANCH=${MKAGENT_BRANCH:-dev}
 
 _repo() {
 	REPOS="\
-$SITE_ROOT/env|$GIT_PRIVATE_READ_URL/massbitroute/env.git|$SSL_BRANCH \
+$SITE_ROOT/env|$GIT_PRIVATE_READ_URL/massbitroute/env.git|$MBR_ENV \
 /etc/letsencrypt|$GIT_PRIVATE_READ_URL/massbitroute/ssl.git|$SSL_BRANCH \
+ $mbr_root/gbc|https://github.com/massbitprotocol/massbitroute_gbc|$GBC_BRANCH \
  $mbr_root/gbc/bin/.asdf|https://github.com/massbitprotocol/massbitroute_asdf|$ASDF_BRANCH \
   $service_dir/stat|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_stat.git|$STAT_BRANCH \
   $service_dir/stat/etc/conf|https://$GIT_STATDEPLOY_WRITE@$GIT_PRIVATE_DOMAIN/massbitroute/statdeploy.git|$STAT_BRANCH \
@@ -48,13 +51,6 @@ _repo
 _prepare() {
 	echo "Prepare"
 
-	_git_clone $GIT_PRIVATE_READ_URL/massbitroute/env.git /massbit/massbitroute/app/src/env $BRANCH
-
-	source $SITE_ROOT/.env
-	_git_clone $GIT_PUBLIC_URL/massbitprotocol/massbitroute_gbc.git $mbr_root/gbc
-	bash $SITE_ROOT/cmd_server _env
-	source $SITE_ROOT/.env_raw
-	_repo
 }
 
 _install_repos() {
@@ -66,16 +62,30 @@ _install_repos() {
 		_git_clone $_url $_path $_branch
 	done
 }
-_install() {
-	mkdir -p $SITE_ROOT/logs $SITE_ROOT/d $SITE_ROOT/etc $SITE_ROOT/tmp
-	_git_config
-	_prepare
-	_install_repos
+_init() {
+	if [ -z "$GIT_PRIVATE_READ_URL" ]; then
+		echo "Need GIT_PRIVATE_READ_URL"
+		exit 1
+	fi
+	_tune_os
+	if [ ! -f "$SITE_ROOT/.env" ]; then
+		echo "$MBR_ENV" >$SITE_ROOT/.env
+	fi
 
+	source $SITE_ROOT/.env
+
+	_git_clone $GIT_PRIVATE_READ_URL/massbitroute/env.git /massbit/massbitroute/app/src/env $MBR_ENV
+	_git_clone $GIT_PUBLIC_URL/massbitprotocol/massbitroute_gbc.git /massbit/massbitroute/app/gbc
+	bash $SITE_ROOT/cmd_server _env
+	source $SITE_ROOT/.env_raw
+	_repo
+}
+_supervisor() {
 	ln -sf /massbit/massbitroute/app/gbc /massbit/massbitroute/app/src/gbc
 	ln -sf /massbit/massbitroute/app/gbc/bin/openresty /usr/local/openresty
 	apt-get update
-	apt-get install -y git apache2-utils supervisor jq python-is-python2 libssl-dev
+	apt-get install -y git apache2-utils supervisor jq python-is-python2 libssl-dev \
+		liburcu-dev libev-dev libsodium-dev libtool libunwind-dev libmaxminddb-dev
 
 	systemctl enable supervisor
 	systemctl start supervisor
@@ -83,6 +93,13 @@ _install() {
 	mkdir -p /etc/supervisor/conf.d
 	cp supervisor.conf /etc/supervisor/conf.d/${TYPE}.conf
 	supervisorctl update
+}
+_install() {
+
+	_init
+	_prepare
+	_install_repos
+	_supervisor
 
 }
 
