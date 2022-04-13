@@ -188,7 +188,6 @@ _rebuild_conf() {
 }
 
 _reload() {
-	# _rebuild_conf
 	bash $SITE_ROOT/etc/mkagent/push.sh _kill
 	curl -X POST http://127.0.0.1:44448/__internal_prometheus_node/-/reload
 	curl -X POST http://127.0.0.1:44449/__internal_prometheus_gw/-/reload
@@ -213,13 +212,9 @@ _update() {
 
 _monitor() {
 	echo mbr-stat >vars/TYPE
-	# _update_sources $REPOS
-	# is_reload=$?
 
 	_update
-	# if [ $is_reload -ne 0 ]; then
 	is_reload=$?
-	# fi
 
 	if [ $is_reload -ne 0 ]; then
 		$0 _reload
