@@ -50,7 +50,13 @@ _repo
 
 _prepare() {
 	echo "Prepare"
-
+	mkdir -p \
+		$SITE_ROOT/logs/nginx \
+		$SITE_ROOT/db \
+		$SITE_ROOT/tmp \
+		$SITE_ROOT/db \
+		$SITE_ROOT/etc/prometheus/stat_gw \
+		$SITE_ROOT/etc/prometheus/stat_node
 }
 
 _install_repos() {
@@ -95,12 +101,10 @@ _supervisor() {
 	supervisorctl update
 }
 _install() {
-
 	_init
 	_prepare
 	_install_repos
 	_supervisor
-
 }
 
 _service_grafana() {
