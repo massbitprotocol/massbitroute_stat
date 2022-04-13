@@ -60,6 +60,7 @@ _prepare() {
 }
 
 _install_repos() {
+	_git_config
 	_repo
 	for _pathgit in $REPOS; do
 		_path=$(echo $_pathgit | cut -d'|' -f1)
@@ -187,7 +188,7 @@ _rebuild_conf() {
 }
 
 _reload() {
-	_rebuild_conf
+	# _rebuild_conf
 	bash $SITE_ROOT/etc/mkagent/push.sh _kill
 	curl -X POST http://127.0.0.1:44448/__internal_prometheus_node/-/reload
 	curl -X POST http://127.0.0.1:44449/__internal_prometheus_gw/-/reload
@@ -195,6 +196,7 @@ _reload() {
 }
 
 _update_repos() {
+	_git_config
 	_repo
 	_update_sources $REPOS
 	_st_repo=$?
@@ -203,10 +205,9 @@ _update_repos() {
 
 _update() {
 	echo "Update"
-
 	_update_repos
 	_st_update=$?
-
+	_rebuild_conf
 	return $_st_update
 }
 
