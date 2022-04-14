@@ -57,6 +57,8 @@ _prepare() {
 		$SITE_ROOT/db \
 		$SITE_ROOT/etc/prometheus/stat_gw \
 		$SITE_ROOT/etc/prometheus/stat_node
+	rm -rf $SITE_ROOT/tmp/*
+
 }
 
 _install_repos() {
