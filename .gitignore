@@ -8,5 +8,3 @@ etc/prometheus/
 vars/
 /.env_raw
 src/env.lua
-src/env.lua
-src/env.lua
