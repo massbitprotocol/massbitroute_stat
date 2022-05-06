@@ -141,11 +141,11 @@ _service_prometheus_gw_v1() {
 	mkdir -p $SITE_ROOT/data/prometheus/stat_${_type} $SITE_ROOT/data/run/conf/
 	_p=44200
 	find $SITE_ROOT/etc/prometheus/stat_${_type} -type f -iname '*.yml' | while read f; do
-		_t=$(basename $f .yml | sed 's/-/_/g')
+		_t=$(basename $f .yml)
 		_url=127.0.0.1:${_p}
 		_data_dir=$SITE_ROOT/data/prometheus/stat_${_type}/$_t
 		cat >$SITE_ROOT/data/run/conf/${_type}_${_t}.conf <<EOF
-    location /__internal_prometheus_${_type}_${_t}/ {
+    location /__internal_prometheus_${_type}-${_t}/ {
         # limit_except GET {
         #     deny all;
         # }
@@ -171,11 +171,11 @@ _service_prometheus_node_v1() {
 	mkdir -p $SITE_ROOT/data/prometheus/stat_${_type} $SITE_ROOT/data/run/conf
 	_p=44100
 	find $SITE_ROOT/etc/prometheus/stat_${_type} -type f -iname '*.yml' | while read f; do
-		_t=$(basename $f .yml | sed 's/-/_/g')
+		_t=$(basename $f .yml)
 		_url=127.0.0.1:${_p}
 		_data_dir=$SITE_ROOT/data/prometheus/stat_${_type}/$_t
 		cat >$SITE_ROOT/data/run/conf/${_type}_${_t}.conf <<EOF
-    location /__internal_prometheus_${_type}_${_t}/ {
+    location /__internal_prometheus_${_type}-${_t}/ {
         # limit_except GET {
         #     deny all;
         # }
