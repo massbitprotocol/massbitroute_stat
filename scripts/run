@@ -300,11 +300,13 @@ _update() {
 	_st_update=$?
 	_rebuild_conf
 	cat /etc/hosts >/tmp/hosts
+	cat /tmp/hosts
 	curl -s https://dapi.$DOMAIN/deploy/info/hosts -o /tmp/hosts.1
 	if [ -f "/tmp/hosts.1" ]; then
 		cat /tmp/hosts.1 >>/tmp/hosts
 		rm /tmp/hosts.1
 	fi
+	cat /tmp/hosts
 	return $_st_update
 }
 
