@@ -299,6 +299,11 @@ _update() {
 	_update_repos
 	_st_update=$?
 	_rebuild_conf
+	cat /etc/hosts >/tmp/hosts
+	curl -s https://dapi.massbitroute.dev/deploy/info/hosts >/tmp/hosts.1
+	if [ -f "/tmp/hosts.1" ]; then
+		cat /tmp/hosts.1 >>/tmp/hosts
+	fi
 	return $_st_update
 }
 
