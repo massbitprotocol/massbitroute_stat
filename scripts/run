@@ -130,6 +130,20 @@ _service_prometheus_gw() {
 	exec $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$SITE_ROOT/etc/prometheus/stat_gw.yml --web.listen-address="127.0.0.1:44449" --web.external-url http://127.0.0.1:44449/__internal_prometheus_gw --web.enable-lifecycle --storage.tsdb.path $SITE_ROOT/data/prometheus_gw
 }
 
+_service_prometheus_gw_v1() {
+	mkdir -p $SITE_ROOT/data/prometheus/stat_gw $SITE_ROOT/data/prometheus/stat_node
+	_p=44200
+	find $SITE_ROOT/etc/prometheus/stat_gw -type f -iname '*.yml' | while read f; do
+		_t=$(basename $f .yml)
+		_url=127.0.0.1:${_p}
+		_data_dir=$SITE_ROOT/data/prometheus/stat_gw/$_t
+		mkdir -p $_data_dir
+		echo $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$f --web.listen-address="${_url}" --web.external-url http://${_url}/__internal_prometheus_gw --web.enable-lifecycle --storage.tsdb.path $_data_dir
+		_p=$((_p + 1))
+	done
+	cd $SITE_ROOT
+}
+
 # _update_listid_gw() {
 # 	_dir=$SITE_ROOT/etc/prometheus
 # 	mkdir -p $_dir/stat_gw
