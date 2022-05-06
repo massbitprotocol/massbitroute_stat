@@ -281,6 +281,7 @@ _reload() {
 	_sc=$(mktemp)
 	awk '/proxy_pass.*__internal_prometheus/{sub(/;$/,"",$2);print "curl -s -X POST",$2"-/reload"}' $SITE_ROOT/data/run/conf/*.conf >$_sc
 	bash $_sc
+	cat $_sc
 	rm $_sc
 	$SITE_ROOT/cmd_server _update
 }
