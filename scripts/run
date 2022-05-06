@@ -137,7 +137,7 @@ _service_prometheus_gw() {
 
 _service_prometheus_gw_v1() {
 
-	mkdir -p $SITE_ROOT/data/prometheus/stat_gw $SITE_ROOT/data/prometheus/stat_node mkdir -p $SITE_ROOT/data/run
+	mkdir -p $SITE_ROOT/data/prometheus/stat_gw $SITE_ROOT/data/run
 	_p=44200
 	find $SITE_ROOT/etc/prometheus/stat_gw -type f -iname '*.yml' | while read f; do
 		_t=$(basename $f .yml)
@@ -161,6 +161,35 @@ EOF
 		_p=$((_p + 1))
 	done >$SITE_ROOT/data/run/stat_gw.sh
 	cat $SITE_ROOT/data/run/stat_gw.sh | parallel -j$(wc -l $SITE_ROOT/data/run/stat_gw.sh | cut -d' ' -f1)
+	cd $SITE_ROOT
+}
+
+_service_prometheus_node_v1() {
+
+	mkdir -p $SITE_ROOT/data/prometheus/stat_node $SITE_ROOT/data/run
+	_p=44100
+	find $SITE_ROOT/etc/prometheus/stat_node -type f -iname '*.yml' | while read f; do
+		_t=$(basename $f .yml)
+		_url=127.0.0.1:${_p}
+		_data_dir=$SITE_ROOT/data/prometheus/stat_node/$_t
+		cat >$SITE_ROOT/data/run/${_t}.conf <<EOF
+    location /__internal_prometheus_node_${_t}/ {
+        # limit_except GET {
+        #     deny all;
+        # }
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$remote_addr;
+        proxy_set_header X-Forwarded-Host \$remote_addr;
+        proxy_pass_request_headers on;
+        proxy_pass http://${_url}/__internal_prometheus_node-${_t}/;
+    }
+EOF
+		mkdir -p $_data_dir
+		echo $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$f --web.listen-address="${_url}" --web.external-url http://${_url}/__internal_prometheus_node_${_t} --web.enable-lifecycle --storage.tsdb.path $_data_dir
+		_p=$((_p + 1))
+	done >$SITE_ROOT/data/run/stat_node.sh
+	cat $SITE_ROOT/data/run/stat_node.sh | parallel -j$(wc -l $SITE_ROOT/data/run/stat_node.sh | cut -d' ' -f1)
 	cd $SITE_ROOT
 }
 
