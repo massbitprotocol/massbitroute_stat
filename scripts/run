@@ -160,6 +160,7 @@ EOF
 		echo $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$f --web.listen-address="${_url}" --web.external-url http://${_url}/__internal_prometheus_gw_${_t} --web.enable-lifecycle --storage.tsdb.path $_data_dir
 		_p=$((_p + 1))
 	done >$SITE_ROOT/data/run/stat_gw.sh
+	cat $SITE_ROOT/data/run/stat_gw.sh | parallel -j$(wc -l $SITE_ROOT/data/run/stat_gw.sh | cut -d' ' -f1)
 	cd $SITE_ROOT
 }
 
