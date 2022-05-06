@@ -278,6 +278,10 @@ _reload() {
 	bash $SITE_ROOT/etc/mkagent/push.sh _kill
 	curl -X POST http://127.0.0.1:44448/__internal_prometheus_node/-/reload
 	curl -X POST http://127.0.0.1:44449/__internal_prometheus_gw/-/reload
+	_sc=$(mktemp)
+	awk '/proxy_pass.*__internal_prometheus/{sub(/;$/,"",$2);print "curl -s -X POST",$2"-/reload"}' $SITE_ROOT/data/run/conf/*.conf >$_sc
+	bash $_sc
+	rm $_sc
 	$SITE_ROOT/cmd_server _update
 }
 
