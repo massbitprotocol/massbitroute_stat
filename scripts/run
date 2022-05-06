@@ -181,6 +181,7 @@ _rebuild_conf() {
 
 		cat $SITE_ROOT/etc/prometheus/_stat.yml >$_ftmp
 		cat $f >>$_ftmp
+		echo >>$_ftmp
 		mkdir -p $(dirname $SITE_ROOT/etc/prometheus/$f)
 		mv $_ftmp $SITE_ROOT/etc/prometheus/$f
 
