@@ -143,6 +143,19 @@ _service_prometheus_gw_v1() {
 		_t=$(basename $f .yml)
 		_url=127.0.0.1:${_p}
 		_data_dir=$SITE_ROOT/data/prometheus/stat_gw/$_t
+		cat >$SITE_ROOT/data/run/${_t}.conf <<EOF
+    location /__internal_prometheus_gw_${_p}/ {
+        # limit_except GET {
+        #     deny all;
+        # }
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$remote_addr;
+        proxy_set_header X-Forwarded-Host \$remote_addr;
+        proxy_pass_request_headers on;
+        proxy_pass http://${_url}/__internal_prometheus_gw/;
+    }
+EOF
 		mkdir -p $_data_dir
 		echo $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$f --web.listen-address="${_url}" --web.external-url http://${_url}/__internal_prometheus_gw --web.enable-lifecycle --storage.tsdb.path $_data_dir
 		_p=$((_p + 1))
