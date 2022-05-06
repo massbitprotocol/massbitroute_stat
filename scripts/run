@@ -303,6 +303,7 @@ _update() {
 	curl -s https://dapi.massbitroute.dev/deploy/info/hosts >/tmp/hosts.1
 	if [ -f "/tmp/hosts.1" ]; then
 		cat /tmp/hosts.1 >>/tmp/hosts
+		rm /tmp/hosts.1
 	fi
 	return $_st_update
 }
