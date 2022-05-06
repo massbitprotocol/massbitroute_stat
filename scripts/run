@@ -59,6 +59,11 @@ _prepare() {
 		$SITE_ROOT/etc/prometheus/stat_node
 	# rm -rf $SITE_ROOT/tmp/*
 
+	if [ ! -f "/usr/bin/parallel" ]; then
+		apt update
+		apt install -y parallel
+	fi
+
 }
 
 _install_repos() {
