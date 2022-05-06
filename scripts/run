@@ -171,11 +171,19 @@ _rebuild_conf() {
 	#	_update_listid
 	_dir=$SITE_ROOT/etc/conf
 
+	cd $_dir
+
 	_file_ok=$SITE_ROOT/etc/prometheus/stat_gw.yml
 	_file=$(mktemp)
 	cat $SITE_ROOT/etc/prometheus/_stat.yml >$_file
+	_ftmp=$(mktemp)
+	find stat_gw -type f -iname '*.yml' | while read f; do
 
-	find $_dir/stat_gw -type f -iname '*.yml' | while read f; do
+		cat $SITE_ROOT/etc/prometheus/_stat.yml >$_ftmp
+		cat $f >>$_ftmp
+		mkdir -p $(dirname $SITE_ROOT/etc/prometheus/$f)
+		mv $_ftmp $SITE_ROOT/etc/prometheus/$f
+
 		cat $f >>$_file
 		echo >>$_file
 	done
@@ -190,6 +198,7 @@ _rebuild_conf() {
 		echo >>$_file
 	done
 	mv $_file $_file_ok
+	cd $SITE_ROOT
 }
 
 _reload() {
