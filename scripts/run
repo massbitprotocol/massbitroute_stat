@@ -174,7 +174,7 @@ _service_prometheus_node_v1() {
 		_t=$(basename $f .yml)
 		_url=127.0.0.1:${_p}
 		_data_dir=$SITE_ROOT/data/prometheus/stat_${_type}/$_t
-		cat >$SITE_ROOT/data/run/${_type}_${_t}.conf <<EOF
+		cat >$SITE_ROOT/data/run/conf/${_type}_${_t}.conf <<EOF
     location /__internal_prometheus_${_type}_${_t}/ {
         # limit_except GET {
         #     deny all;
