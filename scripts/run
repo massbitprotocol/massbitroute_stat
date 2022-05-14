@@ -242,6 +242,7 @@ _rebuild_conf() {
 	_file=$(mktemp)
 	cat $SITE_ROOT/etc/prometheus/_stat.yml >$_file
 	_ftmp=$(mktemp)
+	mkdir -p stat_gw
 	find stat_gw -type f -iname '*.yml' | while read f; do
 
 		cat $SITE_ROOT/etc/prometheus/_stat.yml >$_ftmp
@@ -258,7 +259,7 @@ _rebuild_conf() {
 	_file_ok=$SITE_ROOT/etc/prometheus/stat_node.yml
 	_file=$(mktemp)
 	cat $SITE_ROOT/etc/prometheus/_stat.yml >$_file
-
+	mkdir -p stat_node
 	find stat_node -type f -iname '*.yml' | while read f; do
 
 		cat $SITE_ROOT/etc/prometheus/_stat.yml >$_ftmp
