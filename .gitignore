@@ -14,3 +14,4 @@ src/
 /etc/conf/
 src/env.lua
 src/env.lua
+/.parallel/
