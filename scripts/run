@@ -42,7 +42,7 @@ $SITE_ROOT/env|$GIT_PRIVATE_READ_URL/massbitroute/env.git|$MBR_ENV \
  $mbr_root/gbc|https://github.com/massbitprotocol/massbitroute_gbc|$GBC_BRANCH \
  $mbr_root/gbc/bin/.asdf|https://github.com/massbitprotocol/massbitroute_asdf|$ASDF_BRANCH \
   $service_dir/stat|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_stat.git|$STAT_BRANCH \
-  $service_dir/stat/etc/conf|https://$GIT_STATDEPLOY_WRITE@$GIT_PRIVATE_DOMAIN/massbitroute/statdeploy.git|$STAT_BRANCH \
+  $service_dir/stat/etc/conf|http://$GIT_STATDEPLOY_WRITE@$GIT_PRIVATE_DOMAIN/massbitroute/statdeploy.git|$STAT_BRANCH \
   $service_dir/mkagent|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_mkagent.git|$MKAGENT_BRANCH \
 "
 }
@@ -124,16 +124,16 @@ _service_grafana() {
 }
 
 # service config for Prometheus Node
-_service_prometheus_node() {
-	mkdir -p $SITE_ROOT/data/prometheus_node
-	exec $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$SITE_ROOT/etc/prometheus/stat_node.yml --web.listen-address="127.0.0.1:44448" --web.external-url http://127.0.0.1:44448/__internal_prometheus_node --web.enable-lifecycle --storage.tsdb.path $SITE_ROOT/data/prometheus_node
-}
+# _service_prometheus_node() {
+# 	mkdir -p $SITE_ROOT/data/prometheus_node
+# 	exec $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$SITE_ROOT/etc/prometheus/stat_node.yml --web.listen-address="127.0.0.1:44448" --web.external-url http://127.0.0.1:44448/__internal_prometheus_node --web.enable-lifecycle --storage.tsdb.path $SITE_ROOT/data/prometheus_node
+# }
 
-# service config for Prometheus Gateway
-_service_prometheus_gw() {
-	mkdir -p $SITE_ROOT/data/prometheus_gw
-	exec $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$SITE_ROOT/etc/prometheus/stat_gw.yml --web.listen-address="127.0.0.1:44449" --web.external-url http://127.0.0.1:44449/__internal_prometheus_gw --web.enable-lifecycle --storage.tsdb.path $SITE_ROOT/data/prometheus_gw
-}
+# # service config for Prometheus Gateway
+# _service_prometheus_gw() {
+# 	mkdir -p $SITE_ROOT/data/prometheus_gw
+# 	exec $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$SITE_ROOT/etc/prometheus/stat_gw.yml --web.listen-address="127.0.0.1:44449" --web.external-url http://127.0.0.1:44449/__internal_prometheus_gw --web.enable-lifecycle --storage.tsdb.path $SITE_ROOT/data/prometheus_gw
+# }
 
 _service_prometheus_gw_v1() {
 
