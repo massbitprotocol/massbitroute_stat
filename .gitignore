@@ -1,5 +1,5 @@
 .gitconfig
-env/
+env*
 /db/
 /logs/
 /tmp/
