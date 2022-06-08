@@ -4,6 +4,32 @@ TYPE="stat"
 SITE_ROOT=$(realpath $(dirname $(realpath $0))/..)
 
 export HOME=$SITE_ROOT
+_repo() {
+	export MBR_ENV=${MBR_ENV:-dev}
+	export BRANCH=${BRANCH:-$MBR_ENV}
+	export MBRAPP_BRANCH=${MBRAPP_BRANCH:-$MBR_ENV}
+	export ASDF_BRANCH=${ASDF_BRANCH:-$MBR_ENV}
+	export SSL_BRANCH=${SSL_BRANCH:-$MBR_ENV}
+	export GWMAN_BRANCH=${GWMAN_BRANCH:-$MBR_ENV}
+	export NODE_BRANCH=${NODE_BRANCH:-$MBR_ENV}
+	export GATEWAY_BRANCH=${GATEWAY_BRANCH:-$MBR_ENV}
+	export STAT_BRANCH=${STAT_BRANCH:-$MBR_ENV}
+	export MONITOR_BRANCH=${MONITOR_BRANCH:-$MBR_ENV}
+	export API_BRANCH=${API_BRANCH:-$MBR_ENV}
+	export SESSION_BRANCH=${SESSION_BRANCH:-$MBR_ENV}
+	export GIT_BRANCH=${GIT_BRANCH:-$MBR_ENV}
+	export MKAGENT_BRANCH=${MKAGENT_BRANCH:-$MBR_ENV}
+	REPOS="\
+$SITE_ROOT/env|$GIT_PRIVATE_READ_URL/massbitroute/env.git|$MBR_ENV \
+/etc/letsencrypt|$GIT_PRIVATE_READ_URL/massbitroute/ssl.git|$SSL_BRANCH \
+ $mbr_root/gbc|https://github.com/massbitprotocol/massbitroute_gbc|$GBC_BRANCH \
+ $mbr_root/gbc/bin/.asdf|https://github.com/massbitprotocol/massbitroute_asdf|$ASDF_BRANCH \
+  $service_dir/stat|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_stat.git|$STAT_BRANCH \
+  $service_dir/stat/etc/conf|http://$GIT_STATDEPLOY_WRITE@$GIT_PRIVATE_DOMAIN/massbitroute/statdeploy.git|$STAT_BRANCH \
+  $service_dir/mkagent|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_mkagent.git|$MKAGENT_BRANCH \
+"
+}
+_repo
 
 if [ -e "$SITE_ROOT/cmd_server" ]; then bash $SITE_ROOT/cmd_server _env; fi
 if [ -f "$SITE_ROOT/.env_raw" ]; then source $SITE_ROOT/.env_raw; fi
@@ -19,34 +45,6 @@ PROMETHEUS_VERSION=v2.30.3
 ASDF=$SITE_ROOT/bin/.asdf/installs
 GRAFANA_DIR=$ASDF/grafana/$GRAFANA_VERSION
 PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSION
-
-export MBR_ENV=${MBR_ENV:-dev}
-export BRANCH=${BRANCH:-$MBR_ENV}
-export MBRAPP_BRANCH=${MBRAPP_BRANCH:-$MBR_ENV}
-export ASDF_BRANCH=${ASDF_BRANCH:-$MBR_ENV}
-export SSL_BRANCH=${SSL_BRANCH:-$MBR_ENV}
-export GWMAN_BRANCH=${GWMAN_BRANCH:-$MBR_ENV}
-export NODE_BRANCH=${NODE_BRANCH:-$MBR_ENV}
-export GATEWAY_BRANCH=${GATEWAY_BRANCH:-$MBR_ENV}
-export STAT_BRANCH=${STAT_BRANCH:-$MBR_ENV}
-export MONITOR_BRANCH=${MONITOR_BRANCH:-$MBR_ENV}
-export API_BRANCH=${API_BRANCH:-$MBR_ENV}
-export SESSION_BRANCH=${SESSION_BRANCH:-$MBR_ENV}
-export GIT_BRANCH=${GIT_BRANCH:-$MBR_ENV}
-export MKAGENT_BRANCH=${MKAGENT_BRANCH:-$MBR_ENV}
-
-_repo() {
-	REPOS="\
-$SITE_ROOT/env|$GIT_PRIVATE_READ_URL/massbitroute/env.git|$MBR_ENV \
-/etc/letsencrypt|$GIT_PRIVATE_READ_URL/massbitroute/ssl.git|$SSL_BRANCH \
- $mbr_root/gbc|https://github.com/massbitprotocol/massbitroute_gbc|$GBC_BRANCH \
- $mbr_root/gbc/bin/.asdf|https://github.com/massbitprotocol/massbitroute_asdf|$ASDF_BRANCH \
-  $service_dir/stat|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_stat.git|$STAT_BRANCH \
-  $service_dir/stat/etc/conf|http://$GIT_STATDEPLOY_WRITE@$GIT_PRIVATE_DOMAIN/massbitroute/statdeploy.git|$STAT_BRANCH \
-  $service_dir/mkagent|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_mkagent.git|$MKAGENT_BRANCH \
-"
-}
-_repo
 
 _prepare() {
 	echo "Prepare"
