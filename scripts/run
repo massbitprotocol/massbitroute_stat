@@ -374,12 +374,12 @@ _discover_host() {
 	for _ss in 1-0 0-1 1-1; do
 		curl -skL https://$PORTAL_DOMAIN/deploy/info/$_node_type/listid-${_blockchain}-${_network}-$_ss -o ${tmp}.1
 		if [ $? -eq 0 ]; then
-			cat ${tmp}.1 >>$tmp
+			awk '{print "          -",$5}' ${tmp}.1 >>$tmp
 			echo >>$tmp
 		fi
 	done
 	awk 'NF > 0' $tmp >$_conf
-	rm $tmp
+	rm ${tmp}*
 
 }
 _monitor() {
