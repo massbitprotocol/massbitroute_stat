@@ -371,7 +371,7 @@ _discover_host() {
 	_conf=$SITE_ROOT/etc/prometheus/${_type}.yml
 
 	tmp=$(mktemp)
-	cat $SITE_ROOT/etc/prometheus/_stat.yml >$tmp
+
 	for _ss in 1-0 0-1 1-1; do
 		curl -skL https://$PORTAL_DOMAIN/deploy/info/$_node_type/listid-${_blockchain}-${_network}-$_ss -o ${tmp}.1
 		if [ $? -eq 0 ]; then
@@ -379,7 +379,8 @@ _discover_host() {
 			echo >>$tmp
 		fi
 	done
-	awk 'NF > 0' $tmp | sort | uniq >$_conf
+	awk 'NF > 0' $tmp | sort | uniq >${tmp}.2
+	cat $SITE_ROOT/etc/prometheus/_stat.yml ${tmp}.2 >$_conf
 	rm ${tmp}*
 
 }
