@@ -287,6 +287,7 @@ _rebuild_conf() {
 
 _reload() {
 	bash $SITE_ROOT/etc/mkagent/push.sh _kill
+	curl -X POST http://127.0.0.1:44444/__internal_prometheus_node/-/reload
 	curl -X POST http://127.0.0.1:44448/__internal_prometheus_node/-/reload
 	curl -X POST http://127.0.0.1:44449/__internal_prometheus_gw/-/reload
 	_sc=$(mktemp)
@@ -295,6 +296,8 @@ _reload() {
 	cat $_sc
 	rm $_sc
 	$SITE_ROOT/cmd_server _update
+	$SITE_ROOT/cmd_server update
+	$SITE_ROOT/cmd_server start all
 }
 
 _update_repos() {
@@ -326,12 +329,25 @@ _update() {
 	return $_st_update
 }
 
+_discover_host() {
+	_node_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
+	_network=$(cat $SITE_ROOT/vars/STAT_NETWORK)
+	_blockchain=$(cat $SITE_ROOT/vars/STAT_BLOCKCHAIN)
+	if [ -z "$_type" ]; then _type=${_node_type}-${_blockchain}-${_network}; fi
+	_conf=$SITE_ROOT/etc/prometheus/${_type}.yml
+
+	tmp=$(mktemp)
+	for _ss in 1-0 0-1 1-1; do
+		curl -skL https://$PORTAL_DOMAIN/deploy/info/$_node_type/listid-${_blockchain}-${_network}-$_ss -o >>$tmp
+		echo >>$tmp
+	done
+	awk 'NF > 0' $tmp >$_conf
+	rm $tmp
+
+}
 _monitor() {
 	echo mbr-stat >vars/TYPE
-	if [ ! -f "$SITE_ROOT/vars/STAT_TYPE" ]; then
-		echo gateway-eth-mainnet >$SITE_ROOT/vars/STAT_TYPE
-	fi
-
+	_discover_host
 	_update
 	is_reload=$?
 
