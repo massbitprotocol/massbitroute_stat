@@ -130,9 +130,13 @@ _service_grafana() {
 # }
 
 _service_prometheus() {
-	_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
-	if [ -z "$_type" ]; then _type=gateway-eth-mainnet; fi
+	_node_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
+	_network=$(cat $SITE_ROOT/vars/STAT_NETWORK)
+	_blockchain=$(cat $SITE_ROOT/vars/STAT_BLOCKCHAIN)
+	_type=${_node_type}-${_blockchain}-${_network}
 	_conf=$SITE_ROOT/etc/prometheus/${_type}.yml
+
+	if [ -z "$_type" ]; then _type=gateway-eth-mainnet; fi
 	_data=$SITE_ROOT/data/prometheus/$_type
 	_listen=127.0.0.1:44444
 	mkdir -p $_data
@@ -333,7 +337,7 @@ _discover_host() {
 	_node_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
 	_network=$(cat $SITE_ROOT/vars/STAT_NETWORK)
 	_blockchain=$(cat $SITE_ROOT/vars/STAT_BLOCKCHAIN)
-	if [ -z "$_type" ]; then _type=${_node_type}-${_blockchain}-${_network}; fi
+	_type=${_node_type}-${_blockchain}-${_network}
 	_conf=$SITE_ROOT/etc/prometheus/${_type}.yml
 
 	tmp=$(mktemp)
