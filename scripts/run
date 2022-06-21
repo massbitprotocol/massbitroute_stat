@@ -130,7 +130,8 @@ _service_grafana() {
 # }
 
 _service_prometheus() {
-	_type=$1
+	_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
+	if [ -z "$_type" ]; then _type=gateway-eth-mainnet; fi
 	_conf=$SITE_ROOT/etc/prometheus/${_type}.yml
 	_data=$SITE_ROOT/data/prometheus/$_type
 	_listen=127.0.0.1:44444
@@ -327,6 +328,9 @@ _update() {
 
 _monitor() {
 	echo mbr-stat >vars/TYPE
+	if [ ! -f "$SITE_ROOT/vars/STAT_TYPE" ]; then
+		echo gateway-eth-mainnet >$SITE_ROOT/vars/STAT_TYPE
+	fi
 
 	_update
 	is_reload=$?
