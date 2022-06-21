@@ -130,9 +130,24 @@ _service_grafana() {
 # }
 
 _service_prometheus() {
-	_node_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
-	_network=$(cat $SITE_ROOT/vars/STAT_NETWORK)
-	_blockchain=$(cat $SITE_ROOT/vars/STAT_BLOCKCHAIN)
+	if [ -f "$SITE_ROOT/vars/STAT_TYPE" ]; then
+		_node_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
+	else
+		_node_type="gateway"
+	fi
+
+	if [ -f "$SITE_ROOT/vars/STAT_NETWORK" ]; then
+		_network=$(cat $SITE_ROOT/vars/STAT_NETWORK)
+	else
+		_network="mainnet"
+	fi
+
+	if [ -f "$SITE_ROOT/vars/STAT_BLOCKCHAIN" ]; then
+		_blockchain=$(cat $SITE_ROOT/vars/STAT_BLOCKCHAIN)
+	else
+		_blockchain="eth"
+	fi
+
 	_type=${_node_type}-${_blockchain}-${_network}
 	_conf=$SITE_ROOT/etc/prometheus/${_type}.yml
 
@@ -334,9 +349,24 @@ _update() {
 }
 
 _discover_host() {
-	_node_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
-	_network=$(cat $SITE_ROOT/vars/STAT_NETWORK)
-	_blockchain=$(cat $SITE_ROOT/vars/STAT_BLOCKCHAIN)
+	if [ -f "$SITE_ROOT/vars/STAT_TYPE" ]; then
+		_node_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
+	else
+		_node_type="gateway"
+	fi
+
+	if [ -f "$SITE_ROOT/vars/STAT_NETWORK" ]; then
+		_network=$(cat $SITE_ROOT/vars/STAT_NETWORK)
+	else
+		_network="mainnet"
+	fi
+
+	if [ -f "$SITE_ROOT/vars/STAT_BLOCKCHAIN" ]; then
+		_blockchain=$(cat $SITE_ROOT/vars/STAT_BLOCKCHAIN)
+	else
+		_blockchain="eth"
+	fi
+
 	_type=${_node_type}-${_blockchain}-${_network}
 	_conf=$SITE_ROOT/etc/prometheus/${_type}.yml
 
