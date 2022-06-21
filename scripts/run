@@ -129,6 +129,15 @@ _service_grafana() {
 # 	exec $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$SITE_ROOT/etc/prometheus/stat_node.yml --web.listen-address="127.0.0.1:44448" --web.external-url http://127.0.0.1:44448/__internal_prometheus_node --web.enable-lifecycle --storage.tsdb.path $SITE_ROOT/data/prometheus_node
 # }
 
+_service_prometheus() {
+	_type=$1
+	_conf=$SITE_ROOT/etc/prometheus/${_type}.yml
+	_data=$SITE_ROOT/data/prometheus/$_type
+	_listen=127.0.0.1:44444
+	mkdir -p $_data
+	exec $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$_conf --web.listen-address="$_listen" --web.external-url http://$_listen/__internal_prometheus --web.enable-lifecycle --storage.tsdb.path $_data
+}
+
 # # service config for Prometheus Gateway
 # _service_prometheus_gw() {
 # 	mkdir -p $SITE_ROOT/data/prometheus_gw

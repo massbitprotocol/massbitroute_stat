@@ -31,6 +31,15 @@ stopsignal=INT
 stdout_logfile=_SITE_ROOT_/logs/stat_grafana.log
 ]],
     supervisor = [[
+[program:stat_prometheus]
+command=/bin/bash _SITE_ROOT_/scripts/run loop _service_prometheus _SITE_ROOT_ v1
+autorestart=true
+redirect_stderr=true
+stopasgroup=true
+killasgroup=true
+stopsignal=INT
+stdout_logfile=_SITE_ROOT_/logs/stat_prometheus.log
+
 [program:stat_prometheus_gw_v1]
 command=/bin/bash _SITE_ROOT_/scripts/run loop _service_prometheus_gw_v1 _SITE_ROOT_ v1
 autorestart=true
