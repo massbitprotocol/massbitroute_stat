@@ -20,22 +20,24 @@ ASDF=$SITE_ROOT/bin/.asdf/installs
 GRAFANA_DIR=$ASDF/grafana/$GRAFANA_VERSION
 PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSION
 
-export MBR_ENV=${MBR_ENV:-dev}
-export BRANCH=${BRANCH:-$MBR_ENV}
-export MBRAPP_BRANCH=${MBRAPP_BRANCH:-$MBR_ENV}
-export ASDF_BRANCH=${ASDF_BRANCH:-$MBR_ENV}
-export SSL_BRANCH=${SSL_BRANCH:-$MBR_ENV}
-export GWMAN_BRANCH=${GWMAN_BRANCH:-$MBR_ENV}
-export NODE_BRANCH=${NODE_BRANCH:-$MBR_ENV}
-export GATEWAY_BRANCH=${GATEWAY_BRANCH:-$MBR_ENV}
-export STAT_BRANCH=${STAT_BRANCH:-$MBR_ENV}
-export MONITOR_BRANCH=${MONITOR_BRANCH:-$MBR_ENV}
-export API_BRANCH=${API_BRANCH:-$MBR_ENV}
-export SESSION_BRANCH=${SESSION_BRANCH:-$MBR_ENV}
-export GIT_BRANCH=${GIT_BRANCH:-$MBR_ENV}
-export MKAGENT_BRANCH=${MKAGENT_BRANCH:-$MBR_ENV}
-
 _repo() {
+	if [ -e "$SITE_ROOT/cmd_server" ]; then bash $SITE_ROOT/cmd_server _env; fi
+	if [ -f "$SITE_ROOT/.env_raw" ]; then source $SITE_ROOT/.env_raw; fi
+
+	export MBR_ENV=${MBR_ENV:-dev}
+	# export BRANCH=${BRANCH:-$MBR_ENV}
+	# export MBRAPP_BRANCH=${MBRAPP_BRANCH:-$MBR_ENV}
+	export ASDF_BRANCH=${ASDF_BRANCH:-$MBR_ENV}
+	export SSL_BRANCH=${SSL_BRANCH:-$MBR_ENV}
+	# export GWMAN_BRANCH=${GWMAN_BRANCH:-$MBR_ENV}
+	# export NODE_BRANCH=${NODE_BRANCH:-$MBR_ENV}
+	# export GATEWAY_BRANCH=${GATEWAY_BRANCH:-$MBR_ENV}
+	export STAT_BRANCH=${STAT_BRANCH:-$MBR_ENV}
+	# export MONITOR_BRANCH=${MONITOR_BRANCH:-$MBR_ENV}
+	# export API_BRANCH=${API_BRANCH:-$MBR_ENV}
+	# export SESSION_BRANCH=${SESSION_BRANCH:-$MBR_ENV}
+	# export GIT_BRANCH=${GIT_BRANCH:-$MBR_ENV}
+	export MKAGENT_BRANCH=${MKAGENT_BRANCH:-$MBR_ENV}
 	REPOS="\
 $SITE_ROOT/env|$GIT_PRIVATE_READ_URL/massbitroute/env.git|$MBR_ENV \
 /etc/letsencrypt|$GIT_PRIVATE_READ_URL/massbitroute/ssl.git|$SSL_BRANCH \
@@ -59,10 +61,10 @@ _prepare() {
 		$SITE_ROOT/etc/prometheus/stat_node
 	# rm -rf $SITE_ROOT/tmp/*
 
-	if [ ! -f "/usr/bin/parallel" ]; then
-		apt update
-		apt install -y parallel
-	fi
+	# if [ ! -f "/usr/bin/parallel" ]; then
+	# 	apt update
+	# 	apt install -y parallel
+	# fi
 
 }
 
@@ -82,31 +84,43 @@ _init() {
 		exit 1
 	fi
 	# _tune_os
-	if [ ! -f "$SITE_ROOT/.env" ]; then
-		echo "$MBR_ENV" >$SITE_ROOT/.env
-	fi
+
+	cat <<EOF >$SITE_ROOT/.env
+export GIT_PUBLIC_URL="https://github.com"
+export MBR_ENV=$MBR_ENV
+export GIT_PRIVATE_READ_URL=$GIT_PRIVATE_READ_URL
+EOF
+
+	# if [ ! -f "$SITE_ROOT/.env" ]; then
+	# 	echo "$MBR_ENV" >$SITE_ROOT/.env
+	# fi
 
 	source $SITE_ROOT/.env
-
-	_git_clone $GIT_PRIVATE_READ_URL/massbitroute/env.git /massbit/massbitroute/app/src/env $MBR_ENV
+	_repo
+	_git_clone $GIT_PRIVATE_READ_URL/massbitroute/env.git $SITE_ROOT/env $MBR_ENV
 	_git_clone $GIT_PUBLIC_URL/massbitprotocol/massbitroute_gbc.git /massbit/massbitroute/app/gbc
-	bash $SITE_ROOT/cmd_server _env
-	source $SITE_ROOT/.env_raw
+	# bash $SITE_ROOT/cmd_server _env
+	# source $SITE_ROOT/.env_raw
 	_repo
 }
 _supervisor() {
 	ln -sf /massbit/massbitroute/app/gbc /massbit/massbitroute/app/src/gbc
 	ln -sf /massbit/massbitroute/app/gbc/bin/openresty /usr/local/openresty
-	apt-get update
-	apt-get install -y git apache2-utils supervisor jq python-is-python2 libssl-dev \
-		liburcu-dev libev-dev libsodium-dev libtool libunwind-dev libmaxminddb-dev
+	# apt-get update
+	# apt-get install -y git apache2-utils supervisor jq python-is-python2 libssl-dev \
+	# 	liburcu-dev libev-dev libsodium-dev libtool libunwind-dev libmaxminddb-dev
 
-	systemctl enable supervisor
-	systemctl start supervisor
+	if [ -f "/usr/bin/systemctl" ]; then
 
+		systemctl enable supervisor
+		systemctl start supervisor
+
+	fi
 	mkdir -p /etc/supervisor/conf.d
 	cp supervisor.conf /etc/supervisor/conf.d/${TYPE}.conf
-	supervisorctl update
+	if [ "$MBR_MODE" != "docker" ]; then
+		supervisorctl update
+	fi
 }
 _install_one() {
 	_init
@@ -341,6 +355,14 @@ _add_host_file() {
 }
 _update() {
 	echo "Update"
+	if [ ! -f "$SITE_ROOT/.env" ]; then
+		cat <<EOF >$SITE_ROOT/.env
+export GIT_PUBLIC_URL="https://github.com"
+export MBR_ENV=$MBR_ENV
+export GIT_PRIVATE_READ_URL=$GIT_PRIVATE_READ_URL
+EOF
+	fi
+
 	_update_repos
 	_st_update=$?
 	_rebuild_conf
