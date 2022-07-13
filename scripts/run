@@ -361,6 +361,9 @@ export GIT_PUBLIC_URL="https://github.com"
 export MBR_ENV=$MBR_ENV
 EOF
 	fi
+	if [ -n "$STAT_TYPE" ]; then echo $STAT_TYPE >$SITE_ROOT/vars/STAT_TYPE; fi
+	if [ -n "$STAT_NETWORK" ]; then echo $STAT_NETWORK >$SITE_ROOT/vars/STAT_NETWORK; fi
+	if [ -n "$STAT_BLOCKCHAIN" ]; then echo $STAT_BLOCKCHAIN >$SITE_ROOT/vars/STAT_BLOCKCHAIN; fi
 
 	_update_repos
 	_st_update=$?
