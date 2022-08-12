@@ -41,8 +41,8 @@ _repo_private() {
 		echo "MBR_ENV missing"
 		exit 1
 	fi
-	if [ \( -z "$GIT_PRIVATE_READ_URL" \) -o \( -z "$GIT_PRIVATE_DOMAIN" ] \) -o \( -z "$GIT_STATDEPLOY_WRITE" \) ]; then
-		echo "GIT_PRIVATE_READ_URL|GIT_PRIVATE_DOMAIN|GIT_STATDEPLOY_WRITE missing"
+	if [ \( -z "$GIT_PRIVATE_READ_URL" \) -o \( -z "$GIT_PRIVATE_DOMAIN" ] \) ]; then
+		echo "GIT_PRIVATE_READ_URL|GIT_PRIVATE_DOMAIN missing"
 		exit 1
 	fi
 
@@ -50,7 +50,6 @@ _repo_private() {
 	export ASDF_BRANCH=${ASDF_BRANCH:-$MBR_ENV}
 	export SSL_BRANCH=${SSL_BRANCH:-$MBR_ENV}
 	export STAT_BRANCH=${STAT_BRANCH:-$MBR_ENV}
-	export STATDEPLOY_BRANCH=${STATDEPLOY_BRANCH:-$MBR_ENV}
 	export MKAGENT_BRANCH=${MKAGENT_BRANCH:-$MBR_ENV}
 	_env
 	REPOS_PRIVATE="\
@@ -58,7 +57,7 @@ $SITE_ROOT/env|$GIT_PRIVATE_READ_URL/massbitroute/env.git|$ENV_BRANCH \
 /etc/letsencrypt|$GIT_PRIVATE_READ_URL/massbitroute/ssl.git|$SSL_BRANCH \
 "
 	REPOS_RUNTIME="\ 
-  $service_dir/stat/etc/conf|http://$GIT_STATDEPLOY_WRITE@$GIT_PRIVATE_DOMAIN/massbitroute/statdeploy.git|$STATDEPLOY_BRANCH \
+
 "
 }
 
