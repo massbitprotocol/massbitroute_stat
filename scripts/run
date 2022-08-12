@@ -412,6 +412,7 @@ _monitor() {
 
 _run() {
 	rm -rf $SITE_ROOT/tmp/*
+	_update
 	$SITE_ROOT/start_server
 }
 
