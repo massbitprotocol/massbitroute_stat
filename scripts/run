@@ -284,7 +284,7 @@ _service_prometheus() {
 _rebuild_conf() {
 	#	_update_listid
 	_dir=$SITE_ROOT/etc/conf
-
+	mkdir -p $_dir
 	cd $_dir
 
 	_file_ok=$SITE_ROOT/etc/prometheus/stat_gw.yml
