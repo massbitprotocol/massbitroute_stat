@@ -338,7 +338,7 @@ _reload() {
 _discover_host() {
 	if [ -z "$PORTAL_URL" ]; then
 		echo "PORTAL_URL missing"
-		exit 1
+		return
 	fi
 
 	if [ -f "$SITE_ROOT/vars/STAT_TYPE" ]; then
