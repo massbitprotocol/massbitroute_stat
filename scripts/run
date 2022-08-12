@@ -336,6 +336,11 @@ _reload() {
 }
 
 _discover_host() {
+	if [ -z "$PORTAL_URL" ]; then
+		echo "PORTAL_URL missing"
+		exit 1
+	fi
+
 	if [ -f "$SITE_ROOT/vars/STAT_TYPE" ]; then
 		_node_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
 	# else
@@ -365,7 +370,7 @@ _discover_host() {
 	tmp=$(mktemp)
 
 	for _ss in 1-0 0-1 1-1; do
-		curl -skL https://$PORTAL_DOMAIN/deploy/info/$_node_type/listid-${_blockchain}-${_network}-$_ss -o ${tmp}.1
+		curl -skL $PORTAL_URL/deploy/info/$_node_type/listid-${_blockchain}-${_network}-$_ss -o ${tmp}.1
 		if [ $? -eq 0 ]; then
 			awk '{print "          -",$5}' ${tmp}.1 >>$tmp
 			echo >>$tmp
