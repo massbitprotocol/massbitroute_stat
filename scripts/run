@@ -4,9 +4,8 @@ TYPE="stat"
 SITE_ROOT=$(realpath $(dirname $(realpath $0))/..)
 
 export HOME=$SITE_ROOT
+ROOT_DIR=$SITE_ROOT
 
-if [ -e "$SITE_ROOT/cmd_server" ]; then bash $SITE_ROOT/cmd_server _env; fi
-if [ -f "$SITE_ROOT/.env_raw" ]; then source $SITE_ROOT/.env_raw; fi
 source $SITE_ROOT/scripts/base.sh
 
 cd $SITE_ROOT
@@ -21,34 +20,47 @@ GRAFANA_DIR=$ASDF/grafana/$GRAFANA_VERSION
 PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSION
 
 _repo() {
-	if [ -e "$SITE_ROOT/cmd_server" ]; then bash $SITE_ROOT/cmd_server _env; fi
-	if [ -f "$SITE_ROOT/.env_raw" ]; then source $SITE_ROOT/.env_raw; fi
+	if [ -z "$MBR_ENV" ]; then
+		echo "MBR_ENV missing"
+		exit 1
+	fi
+	if [ -z "$GIT_PUBLIC_URL" ]; then
+		echo "GIT_PUBLIC_URL missing"
+		exit 1
+	fi
 
-	export MBR_ENV=${MBR_ENV:-dev}
-	# export BRANCH=${BRANCH:-$MBR_ENV}
-	# export MBRAPP_BRANCH=${MBRAPP_BRANCH:-$MBR_ENV}
 	export ASDF_BRANCH=${ASDF_BRANCH:-$MBR_ENV}
 	export SSL_BRANCH=${SSL_BRANCH:-$MBR_ENV}
-	# export GWMAN_BRANCH=${GWMAN_BRANCH:-$MBR_ENV}
-	# export NODE_BRANCH=${NODE_BRANCH:-$MBR_ENV}
-	# export GATEWAY_BRANCH=${GATEWAY_BRANCH:-$MBR_ENV}
 	export STAT_BRANCH=${STAT_BRANCH:-$MBR_ENV}
-	# export MONITOR_BRANCH=${MONITOR_BRANCH:-$MBR_ENV}
-	# export API_BRANCH=${API_BRANCH:-$MBR_ENV}
-	# export SESSION_BRANCH=${SESSION_BRANCH:-$MBR_ENV}
-	# export GIT_BRANCH=${GIT_BRANCH:-$MBR_ENV}
 	export MKAGENT_BRANCH=${MKAGENT_BRANCH:-$MBR_ENV}
-	REPOS="\
-$SITE_ROOT/env|$GIT_PRIVATE_READ_URL/massbitroute/env.git|$MBR_ENV \
+	REPOS=""
+}
+
+_repo_private() {
+	if [ -z "$MBR_ENV" ]; then
+		echo "MBR_ENV missing"
+		exit 1
+	fi
+	if [ \( -z "$GIT_PRIVATE_READ_URL" \) -o \( -z "$GIT_PRIVATE_DOMAIN" ] \) -o \( -z "$GIT_STATDEPLOY_WRITE" \) ]; then
+		echo "GIT_PRIVATE_READ_URL|GIT_PRIVATE_DOMAIN|GIT_STATDEPLOY_WRITE missing"
+		exit 1
+	fi
+
+	export ENV_BRANCH=${ENV_BRANCH:-$MBR_ENV}
+	export ASDF_BRANCH=${ASDF_BRANCH:-$MBR_ENV}
+	export SSL_BRANCH=${SSL_BRANCH:-$MBR_ENV}
+	export STAT_BRANCH=${STAT_BRANCH:-$MBR_ENV}
+	export STATDEPLOY_BRANCH=${STATDEPLOY_BRANCH:-$MBR_ENV}
+	export MKAGENT_BRANCH=${MKAGENT_BRANCH:-$MBR_ENV}
+	_env
+	REPOS_PRIVATE="\
+$SITE_ROOT/env|$GIT_PRIVATE_READ_URL/massbitroute/env.git|$ENV_BRANCH \
 /etc/letsencrypt|$GIT_PRIVATE_READ_URL/massbitroute/ssl.git|$SSL_BRANCH \
- $mbr_root/gbc|https://github.com/massbitprotocol/massbitroute_gbc|$GBC_BRANCH \
- $mbr_root/gbc/bin/.asdf|https://github.com/massbitprotocol/massbitroute_asdf|$ASDF_BRANCH \
-  $service_dir/stat|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_stat.git|$STAT_BRANCH \
-  $service_dir/stat/etc/conf|http://$GIT_STATDEPLOY_WRITE@$GIT_PRIVATE_DOMAIN/massbitroute/statdeploy.git|$STAT_BRANCH \
-  $service_dir/mkagent|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_mkagent.git|$MKAGENT_BRANCH \
+"
+	REPOS_RUNTIME="\ 
+  $service_dir/stat/etc/conf|http://$GIT_STATDEPLOY_WRITE@$GIT_PRIVATE_DOMAIN/massbitroute/statdeploy.git|$STATDEPLOY_BRANCH \
 "
 }
-_repo
 
 _prepare() {
 	echo "Prepare"
@@ -67,42 +79,33 @@ _prepare() {
 	# fi
 
 }
-
 _install_repos() {
-	_git_config
-
-	for _pathgit in $REPOS; do
-		_repo
-		_path=$(echo $_pathgit | cut -d'|' -f1)
-		_url=$(echo $_pathgit | cut -d'|' -f2)
-		_branch=$(echo $_pathgit | cut -d'|' -f3)
-		_git_clone $_url $_path $_branch
-	done
+	if [ -z "$MBR_ENV" ]; then
+		echo "MBR_ENV missing"
+		exit 1
+	fi
+	_repo
+	_install_sources $REPOS
+	_install_status=$?
+	return $_install_status
 }
-_init() {
+
+_update_repos() {
+	if [ -z "$MBR_ENV" ]; then
+		echo "MBR_ENV missing"
+		exit 1
+	fi
 	if [ -z "$GIT_PRIVATE_READ_URL" ]; then
 		echo "Need GIT_PRIVATE_READ_URL"
 		exit 1
 	fi
-	# _tune_os
-
-	cat <<EOF >$SITE_ROOT/.env
-export GIT_PUBLIC_URL="https://github.com"
-export MBR_ENV=$MBR_ENV
-EOF
-
-	# if [ ! -f "$SITE_ROOT/.env" ]; then
-	# 	echo "$MBR_ENV" >$SITE_ROOT/.env
-	# fi
-
-	source $SITE_ROOT/.env
-	_repo
-	_git_clone $GIT_PRIVATE_READ_URL/massbitroute/env.git $SITE_ROOT/env $MBR_ENV
-	_git_clone $GIT_PUBLIC_URL/massbitprotocol/massbitroute_gbc.git /massbit/massbitroute/app/gbc
-	# bash $SITE_ROOT/cmd_server _env
-	# source $SITE_ROOT/.env_raw
-	_repo
+	_repo_private
+	_update_sources $REPOS_PRIVATE
+	_update_status=$?
+	_update_sources $REPOS_RUNTIME
+	return $_update_status
 }
+
 _supervisor() {
 	ln -sf /massbit/massbitroute/app/gbc /massbit/massbitroute/app/src/gbc
 	ln -sf /massbit/massbitroute/app/gbc/bin/openresty /usr/local/openresty
@@ -123,7 +126,6 @@ _supervisor() {
 	fi
 }
 _install_one() {
-	_init
 	_prepare
 	_install_repos
 }
@@ -132,10 +134,10 @@ _install() {
 	_supervisor
 }
 
-_service_grafana() {
-	mkdir -p $SITE_ROOT/data/grafana
-	exec $GRAFANA_DIR/bin/grafana-server -config $SITE_ROOT/etc/grafana/stat.ini -homepath $GRAFANA_DIR
-}
+# _service_grafana() {
+# 	mkdir -p $SITE_ROOT/data/grafana
+# 	exec $GRAFANA_DIR/bin/grafana-server -config $SITE_ROOT/etc/grafana/stat.ini -homepath $GRAFANA_DIR
+# }
 
 # service config for Prometheus Node
 # _service_prometheus_node() {
@@ -146,26 +148,31 @@ _service_grafana() {
 _service_prometheus() {
 	if [ -f "$SITE_ROOT/vars/STAT_TYPE" ]; then
 		_node_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
-	else
-		_node_type="gateway"
+	# else
+	# 	_node_type="gateway"
 	fi
 
 	if [ -f "$SITE_ROOT/vars/STAT_NETWORK" ]; then
 		_network=$(cat $SITE_ROOT/vars/STAT_NETWORK)
-	else
-		_network="mainnet"
+	# else
+	# 	_network="mainnet"
 	fi
 
 	if [ -f "$SITE_ROOT/vars/STAT_BLOCKCHAIN" ]; then
 		_blockchain=$(cat $SITE_ROOT/vars/STAT_BLOCKCHAIN)
-	else
-		_blockchain="eth"
+	# else
+	# 	_blockchain="eth"
+	fi
+
+	if [ \( -z "$_node_type" \) -o \( -z "$_network" \) -o \( -z "$_blockchain" \) ]; then
+		echo "node_type or network or blockchain missing"
+		exit 1
 	fi
 
 	_type=${_node_type}-${_blockchain}-${_network}
 	_conf=$SITE_ROOT/etc/prometheus/${_type}.yml
 
-	if [ -z "$_type" ]; then _type=gateway-eth-mainnet; fi
+	# if [ -z "$_type" ]; then _type=gateway-eth-mainnet; fi
 	_data=$SITE_ROOT/data/prometheus/$_type
 	_listen=127.0.0.1:44444
 	mkdir -p $_data
@@ -178,65 +185,65 @@ _service_prometheus() {
 # 	exec $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$SITE_ROOT/etc/prometheus/stat_gw.yml --web.listen-address="127.0.0.1:44449" --web.external-url http://127.0.0.1:44449/__internal_prometheus_gw --web.enable-lifecycle --storage.tsdb.path $SITE_ROOT/data/prometheus_gw
 # }
 
-_service_prometheus_gw_v1() {
+# _service_prometheus_gw_v1() {
 
-	_type=gw
-	mkdir -p $SITE_ROOT/data/prometheus/stat_${_type} $SITE_ROOT/data/run/conf/
-	_p=44200
-	find $SITE_ROOT/etc/prometheus/stat_${_type} -type f -iname '*.yml' | while read f; do
-		_t=$(basename $f .yml)
-		_url=127.0.0.1:${_p}
-		_data_dir=$SITE_ROOT/data/prometheus/stat_${_type}/$_t
-		cat >$SITE_ROOT/data/run/conf/${_type}_${_t}.conf <<EOF
-    location /__internal_prometheus_${_type}_${_t}/ {
-        # limit_except GET {
-        #     deny all;
-        # }
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$remote_addr;
-        proxy_set_header X-Forwarded-Host \$remote_addr;
-        proxy_pass_request_headers on;
-        proxy_pass http://${_url}/__internal_prometheus_${_type}_${_t}/;
-    }
-EOF
-		mkdir -p $_data_dir
-		echo $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$f --web.listen-address="${_url}" --web.external-url http://${_url}/__internal_prometheus_${_type}_${_t} --web.enable-lifecycle --storage.tsdb.path $_data_dir
-		_p=$((_p + 1))
-	done >$SITE_ROOT/data/run/stat_${_type}.sh
-	cat $SITE_ROOT/data/run/stat_${_type}.sh | parallel -j$(wc -l $SITE_ROOT/data/run/stat_${_type}.sh | cut -d' ' -f1)
-	cd $SITE_ROOT
-}
+# 	_type=gw
+# 	mkdir -p $SITE_ROOT/data/prometheus/stat_${_type} $SITE_ROOT/data/run/conf/
+# 	_p=44200
+# 	find $SITE_ROOT/etc/prometheus/stat_${_type} -type f -iname '*.yml' | while read f; do
+# 		_t=$(basename $f .yml)
+# 		_url=127.0.0.1:${_p}
+# 		_data_dir=$SITE_ROOT/data/prometheus/stat_${_type}/$_t
+# 		cat >$SITE_ROOT/data/run/conf/${_type}_${_t}.conf <<EOF
+#     location /__internal_prometheus_${_type}_${_t}/ {
+#         # limit_except GET {
+#         #     deny all;
+#         # }
+#         proxy_set_header Host \$host;
+#         proxy_set_header X-Real-IP \$remote_addr;
+#         proxy_set_header X-Forwarded-For \$remote_addr;
+#         proxy_set_header X-Forwarded-Host \$remote_addr;
+#         proxy_pass_request_headers on;
+#         proxy_pass http://${_url}/__internal_prometheus_${_type}_${_t}/;
+#     }
+# EOF
+# 		mkdir -p $_data_dir
+# 		echo $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$f --web.listen-address="${_url}" --web.external-url http://${_url}/__internal_prometheus_${_type}_${_t} --web.enable-lifecycle --storage.tsdb.path $_data_dir
+# 		_p=$((_p + 1))
+# 	done >$SITE_ROOT/data/run/stat_${_type}.sh
+# 	cat $SITE_ROOT/data/run/stat_${_type}.sh | parallel -j$(wc -l $SITE_ROOT/data/run/stat_${_type}.sh | cut -d' ' -f1)
+# 	cd $SITE_ROOT
+# }
 
-_service_prometheus_node_v1() {
+# _service_prometheus_node_v1() {
 
-	_type=node
-	mkdir -p $SITE_ROOT/data/prometheus/stat_${_type} $SITE_ROOT/data/run/conf
-	_p=44100
-	find $SITE_ROOT/etc/prometheus/stat_${_type} -type f -iname '*.yml' | while read f; do
-		_t=$(basename $f .yml)
-		_url=127.0.0.1:${_p}
-		_data_dir=$SITE_ROOT/data/prometheus/stat_${_type}/$_t
-		cat >$SITE_ROOT/data/run/conf/${_type}_${_t}.conf <<EOF
-    location /__internal_prometheus_${_type}_${_t}/ {
-        # limit_except GET {
-        #     deny all;
-        # }
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$remote_addr;
-        proxy_set_header X-Forwarded-Host \$remote_addr;
-        proxy_pass_request_headers on;
-        proxy_pass http://${_url}/__internal_prometheus_${_type}_${_t}/;
-    }
-EOF
-		mkdir -p $_data_dir
-		echo $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$f --web.listen-address="${_url}" --web.external-url http://${_url}/__internal_prometheus_${_type}_${_t} --web.enable-lifecycle --storage.tsdb.path $_data_dir
-		_p=$((_p + 1))
-	done >$SITE_ROOT/data/run/stat_${_type}.sh
-	cat $SITE_ROOT/data/run/stat_${_type}.sh | parallel -j$(wc -l $SITE_ROOT/data/run/stat_${_type}.sh | cut -d' ' -f1)
-	cd $SITE_ROOT
-}
+# 	_type=node
+# 	mkdir -p $SITE_ROOT/data/prometheus/stat_${_type} $SITE_ROOT/data/run/conf
+# 	_p=44100
+# 	find $SITE_ROOT/etc/prometheus/stat_${_type} -type f -iname '*.yml' | while read f; do
+# 		_t=$(basename $f .yml)
+# 		_url=127.0.0.1:${_p}
+# 		_data_dir=$SITE_ROOT/data/prometheus/stat_${_type}/$_t
+# 		cat >$SITE_ROOT/data/run/conf/${_type}_${_t}.conf <<EOF
+#     location /__internal_prometheus_${_type}_${_t}/ {
+#         # limit_except GET {
+#         #     deny all;
+#         # }
+#         proxy_set_header Host \$host;
+#         proxy_set_header X-Real-IP \$remote_addr;
+#         proxy_set_header X-Forwarded-For \$remote_addr;
+#         proxy_set_header X-Forwarded-Host \$remote_addr;
+#         proxy_pass_request_headers on;
+#         proxy_pass http://${_url}/__internal_prometheus_${_type}_${_t}/;
+#     }
+# EOF
+# 		mkdir -p $_data_dir
+# 		echo $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$f --web.listen-address="${_url}" --web.external-url http://${_url}/__internal_prometheus_${_type}_${_t} --web.enable-lifecycle --storage.tsdb.path $_data_dir
+# 		_p=$((_p + 1))
+# 	done >$SITE_ROOT/data/run/stat_${_type}.sh
+# 	cat $SITE_ROOT/data/run/stat_${_type}.sh | parallel -j$(wc -l $SITE_ROOT/data/run/stat_${_type}.sh | cut -d' ' -f1)
+# 	cd $SITE_ROOT
+# }
 
 # _update_listid_gw() {
 # 	_dir=$SITE_ROOT/etc/prometheus
@@ -319,76 +326,38 @@ _rebuild_conf() {
 }
 
 _reload() {
-	bash $SITE_ROOT/etc/mkagent/push.sh _kill
+	pkill -f push.py
 	curl -X POST http://127.0.0.1:44444/__internal_prometheus_node/-/reload
 	curl -X POST http://127.0.0.1:44448/__internal_prometheus_node/-/reload
 	curl -X POST http://127.0.0.1:44449/__internal_prometheus_gw/-/reload
-	_sc=$(mktemp)
-	awk '/proxy_pass.*__internal_prometheus/{sub(/;$/,"",$2);print "curl -s -X POST",$2"-/reload"}' $SITE_ROOT/data/run/conf/*.conf >$_sc
-	bash $_sc
-	cat $_sc
-	rm $_sc
+
 	$SITE_ROOT/cmd_server _update
 	$SITE_ROOT/cmd_server update
 	$SITE_ROOT/cmd_server start all
 }
 
-_update_repos() {
-	_git_config
-	_repo
-	_update_sources $REPOS
-	_st_repo=$?
-	return $_st_repo
-}
-
-_add_host_file() {
-	if [ ! -f "/etc/hosts.bk" ]; then
-		sed '/.mbr/d' /etc/hosts >/etc/hosts.bk
-	fi
-	cat /etc/hosts.bk >/tmp/hosts
-	curl -s https://api.$DOMAIN/deploy/info/hosts -o /tmp/hosts.1
-	if [ -f "/tmp/hosts.1" ]; then
-		cat /tmp/hosts.1 >>/tmp/hosts
-		cat /tmp/hosts >/etc/hosts
-		rm /tmp/hosts.1
-	fi
-}
-_update() {
-	echo "Update"
-	if [ ! -f "$SITE_ROOT/.env" ]; then
-		cat <<EOF >$SITE_ROOT/.env
-export GIT_PUBLIC_URL="https://github.com"
-export MBR_ENV=$MBR_ENV
-EOF
-	fi
-	if [ -n "$STAT_TYPE" ]; then echo $STAT_TYPE >$SITE_ROOT/vars/STAT_TYPE; fi
-	if [ -n "$STAT_NETWORK" ]; then echo $STAT_NETWORK >$SITE_ROOT/vars/STAT_NETWORK; fi
-	if [ -n "$STAT_BLOCKCHAIN" ]; then echo $STAT_BLOCKCHAIN >$SITE_ROOT/vars/STAT_BLOCKCHAIN; fi
-
-	_update_repos
-	_st_update=$?
-	_rebuild_conf
-	_add_host_file
-	return $_st_update
-}
-
 _discover_host() {
 	if [ -f "$SITE_ROOT/vars/STAT_TYPE" ]; then
 		_node_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
-	else
-		_node_type="gateway"
-	fi
+	# else
+	# 	_node_type="gateway"
+	fi #
 
 	if [ -f "$SITE_ROOT/vars/STAT_NETWORK" ]; then
 		_network=$(cat $SITE_ROOT/vars/STAT_NETWORK)
-	else
-		_network="mainnet"
+	# else
+	# 	_network="mainnet"
 	fi
 
 	if [ -f "$SITE_ROOT/vars/STAT_BLOCKCHAIN" ]; then
 		_blockchain=$(cat $SITE_ROOT/vars/STAT_BLOCKCHAIN)
-	else
-		_blockchain="eth"
+	# else
+	# 	_blockchain="eth"
+	fi
+
+	if [ \( -z "$_node_type" \) -o \( -z "$_network" \) -o \( -z "$_blockchain" \) ]; then
+		echo "node_type or network or blockchain missing"
+		exit 1
 	fi
 
 	_type=${_node_type}-${_blockchain}-${_network}
@@ -408,9 +377,31 @@ _discover_host() {
 	rm ${tmp}*
 
 }
-_monitor() {
-	echo mbr-stat >vars/TYPE
+
+_save_env() {
+	if [ \( -z "$STAT_TYPE" \) -o \( -z "$STAT_NETWORK" \) -o \( -z "$STAT_BLOCKCHAIN" \) ]; then
+		echo "STAT_TYPE or STAT_NETWORK or STAT_BLOCKCHAIN missing"
+		exit 1
+	fi
+
+	if [ -n "$STAT_TYPE" ]; then echo $STAT_TYPE >$SITE_ROOT/vars/STAT_TYPE; fi
+	if [ -n "$STAT_NETWORK" ]; then echo $STAT_NETWORK >$SITE_ROOT/vars/STAT_NETWORK; fi
+	if [ -n "$STAT_BLOCKCHAIN" ]; then echo $STAT_BLOCKCHAIN >$SITE_ROOT/vars/STAT_BLOCKCHAIN; fi
+}
+_update() {
+	echo "Update"
+
+	_save_env
+
 	_discover_host
+	_update_repos
+	_st_update=$?
+	_rebuild_conf
+	#	_add_host_file
+	return $_st_update
+}
+
+_monitor() {
 	_update
 	is_reload=$?
 
