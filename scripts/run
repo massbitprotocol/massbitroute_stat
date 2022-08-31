@@ -301,14 +301,10 @@ _rebuild_conf() {
 	mkdir -p $_dir
 	cd $_dir
 
-	if [ -z "$STAT_PROMETHEUS_SCHEME" ]; then
-		STAT_PROMETHEUS_SCHEME="http"
-	fi
-
 	_file_ok=$SITE_ROOT/etc/prometheus/stat_gw.yml
 	_file=$(mktemp)
 	cat $SITE_ROOT/etc/prometheus/_stat.yml >$_file
-	sed -i "s/_ENV_STAT_PROMETHEUS_SCHEME_/$STAT_PROMETHEUS_SCHEME/g" $_file
+
 	_ftmp=$(mktemp)
 	mkdir -p stat_gw
 	find stat_gw -type f -iname '*.yml' | while read f; do
@@ -394,6 +390,10 @@ _discover_host() {
 	done
 	awk 'NF > 1' $tmp | sort | uniq >${tmp}.2
 	cat $SITE_ROOT/etc/prometheus/_stat.yml ${tmp}.2 >$_conf
+	if [ -z "$STAT_PROMETHEUS_SCHEME" ]; then
+		STAT_PROMETHEUS_SCHEME="http"
+	fi
+	sed -i "s/_ENV_STAT_PROMETHEUS_SCHEME_/$STAT_PROMETHEUS_SCHEME/g" $_conf
 	rm ${tmp}*
 
 }
