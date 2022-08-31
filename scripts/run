@@ -394,6 +394,7 @@ _discover_host() {
 		STAT_PROMETHEUS_SCHEME="http"
 	fi
 	sed -i "s/_ENV_STAT_PROMETHEUS_SCHEME_/$STAT_PROMETHEUS_SCHEME/g" $_conf
+	curl -X POST http://127.0.0.1:44444/__internal_prometheus/-/reload
 	rm ${tmp}*
 
 }
