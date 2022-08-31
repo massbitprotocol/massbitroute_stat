@@ -1,6 +1,6 @@
 scrape_configs:
   - job_name: stat_vhost
-#    scheme: https
+    scheme: _ENV_STAT_PROMETHEUS_SCHEME_
     tls_config:
       insecure_skip_verify: true
     honor_labels: true
