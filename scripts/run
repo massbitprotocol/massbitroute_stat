@@ -341,8 +341,6 @@ _rebuild_conf() {
 _reload() {
 	pkill -f push.py
 	curl -X POST http://127.0.0.1:44444/__internal_prometheus_node/-/reload
-	# curl -X POST http://127.0.0.1:44448/__internal_prometheus_node/-/reload
-	# curl -X POST http://127.0.0.1:44449/__internal_prometheus_gw/-/reload
 
 	$SITE_ROOT/cmd_server _update
 	$SITE_ROOT/cmd_server update
@@ -357,9 +355,8 @@ _discover_host() {
 
 	if [ -f "$SITE_ROOT/vars/STAT_TYPE" ]; then
 		_node_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
-	# else
-	# 	_node_type="gateway"
-	fi #
+
+	fi
 
 	if [ -f "$SITE_ROOT/vars/STAT_NETWORK" ]; then
 		_network=$(cat $SITE_ROOT/vars/STAT_NETWORK)
@@ -390,7 +387,7 @@ _discover_host() {
 			echo >>$tmp
 		fi
 	done
-	awk 'NF > 0' $tmp | sort | uniq >${tmp}.2
+	awk 'NF > 1' $tmp | sort | uniq >${tmp}.2
 	cat $SITE_ROOT/etc/prometheus/_stat.yml ${tmp}.2 >$_conf
 	rm ${tmp}*
 
@@ -415,7 +412,6 @@ _update() {
 	_update_repos
 	_st_update=$?
 	_rebuild_conf
-	#	_add_host_file
 	return $_st_update
 }
 
