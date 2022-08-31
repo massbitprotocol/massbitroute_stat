@@ -340,7 +340,7 @@ _rebuild_conf() {
 
 _reload() {
 	pkill -f push.py
-	curl -X POST http://127.0.0.1:44444/__internal_prometheus_node/-/reload
+	curl -X POST http://127.0.0.1:44444/__internal_prometheus/-/reload
 
 	$SITE_ROOT/cmd_server _update
 	$SITE_ROOT/cmd_server update
