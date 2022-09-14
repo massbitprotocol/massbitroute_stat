@@ -17,9 +17,9 @@
         BRANCH: _BRANCH_
     container_name: mbr_stat    
     environment:
-      - STAT_TYPE=node
-      - STAT_NETWORK=eth
-      - STAT_BLOCKCHAIN=mainnet
+      - STAT_TYPE=node                                               # stat type (node or gatway)
+      - STAT_NETWORK=eth                                             # stat network of blockchain
+      - STAT_BLOCKCHAIN=mainnet                                      # stat blockchain name
       - GIT_PUBLIC_URL="https://github.com"                          # default public source control	
       - PORTAL_URL=http://portal.massbitroute.net                    # default url of portal
       - MBR_ENV=_BRANCH_                                             # Git Tag version deployment of Api repo
