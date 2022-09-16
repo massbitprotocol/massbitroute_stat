@@ -161,20 +161,14 @@ _install() {
 _service_prometheus() {
 	if [ -f "$SITE_ROOT/vars/STAT_TYPE" ]; then
 		_node_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
-	# else
-	# 	_node_type="gateway"
 	fi
 
 	if [ -f "$SITE_ROOT/vars/STAT_NETWORK" ]; then
 		_network=$(cat $SITE_ROOT/vars/STAT_NETWORK)
-	# else
-	# 	_network="mainnet"
 	fi
 
 	if [ -f "$SITE_ROOT/vars/STAT_BLOCKCHAIN" ]; then
 		_blockchain=$(cat $SITE_ROOT/vars/STAT_BLOCKCHAIN)
-	# else
-	# 	_blockchain="eth"
 	fi
 
 	if [ \( -z "$_node_type" \) -o \( -z "$_network" \) -o \( -z "$_blockchain" \) ]; then
@@ -296,6 +290,10 @@ _service_prometheus() {
 # }
 
 _rebuild_conf() {
+	if [ -f "$SITE_ROOT/vars/STAT_TYPE" ]; then
+		_node_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
+	fi
+
 	#	_update_listid
 	_dir=$SITE_ROOT/etc/conf
 	mkdir -p $_dir
@@ -320,11 +318,11 @@ _rebuild_conf() {
 	done
 	mv $_file $_file_ok
 
-	_file_ok=$SITE_ROOT/etc/prometheus/stat_node.yml
 	_file=$(mktemp)
 	cat $SITE_ROOT/etc/prometheus/_stat.yml >$_file
-	mkdir -p stat_node
-	find stat_node -type f -iname '*.yml' | while read f; do
+	_stat_node=stat_${_node_type}
+	mkdir -p $_stat_node
+	find $_stat_node -type f -iname '*.yml' | while read f; do
 
 		cat $SITE_ROOT/etc/prometheus/_stat.yml >$_ftmp
 		cat $f >>$_ftmp
@@ -335,7 +333,7 @@ _rebuild_conf() {
 		cat $f >>$_file
 		echo >>$_file
 	done
-	mv $_file $_file_ok
+	mv $_file $SITE_ROOT/etc/prometheus/${_stat_node}.yml
 	cd $SITE_ROOT
 }
 
