@@ -41,8 +41,8 @@ _repo_private() {
 		echo "MBR_ENV missing"
 		exit 1
 	fi
-	if [ \( -z "$GIT_PRIVATE_READ_URL" \) -o \( -z "$GIT_PRIVATE_DOMAIN" ] \) ]; then
-		echo "GIT_PRIVATE_READ_URL|GIT_PRIVATE_DOMAIN missing"
+	if [ -z "$GIT_PRIVATE_READ_URL" ]; then
+		echo "GIT_PRIVATE_READ_URL missing"
 		exit 1
 	fi
 	if [ -z "$GIT_PRIVATE_BRANCH" ]; then
@@ -420,14 +420,49 @@ _save_env() {
 	if [ -n "$STAT_NETWORK" ]; then echo $STAT_NETWORK >$SITE_ROOT/vars/STAT_NETWORK; fi
 	if [ -n "$STAT_BLOCKCHAIN" ]; then echo $STAT_BLOCKCHAIN >$SITE_ROOT/vars/STAT_BLOCKCHAIN; fi
 }
+
+_update_tag() {
+	PORTAL_DOMAIN=portal.$DOMAIN
+	git="git -C $SITE_ROOT"
+	_v=$($git config --get remote.origin.url | awk -F'/' '{print $NF}')
+	tmp=$(mktemp)
+	curl -sfkL http://$PORTAL_DOMAIN/deploy/info/version/$_v >$tmp
+	if [ $? -ne 0 ]; then
+		rm $tmp
+		return 0
+	fi
+
+	_tag=$(cat $tmp)
+
+	rm $tmp
+
+	_my_tag=$($git describe --tags)
+	_tag_update=0
+	if [ "$_tag" != "$_my_tag" ]; then
+		$git fetch --all --tags --prune
+		$git checkout $_tag
+		_tag_update=1
+	fi
+
+	return $_tag_update
+
+}
+
 _update() {
 	echo "Update"
 
 	_save_env
 
 	_discover_host
+	_st_update=0
 	_update_repos
 	_st_update=$?
+
+	_update_tag
+	if [ $_st_update -eq 0 ]; then
+		_st_update=$?
+	fi
+
 	_rebuild_conf
 	return $_st_update
 }
