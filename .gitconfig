@@ -1,5 +1,0 @@
-   [http]
-        sslverify = false
-    [user]
-	email = baysao@gmail.com
-	name = Baysao
