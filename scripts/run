@@ -454,6 +454,7 @@ _update() {
 	_save_env
 
 	_discover_host
+
 	_st_update=0
 	_update_repos
 	_st_update=$?
