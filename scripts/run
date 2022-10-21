@@ -17,8 +17,8 @@ GRAFANA_VERSION=v8.2.1
 PROMETHEUS_VERSION=v2.30.3
 ASDF=$SITE_ROOT/bin/.asdf/installs
 GRAFANA_DIR=$ASDF/grafana/$GRAFANA_VERSION
-PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSION
-
+PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSIO
+GIT_PUBLIC_URL="https://github.com"
 _repo() {
 	if [ -z "$MBR_ENV" ]; then
 		echo "MBR_ENV missing"
@@ -29,11 +29,20 @@ _repo() {
 		exit 1
 	fi
 
-	export ASDF_BRANCH=${ASDF_BRANCH:-$MBR_ENV}
+	export ASDF_BRANCH=latest
+
+	export GBC_BRANCH=latest
 	export SSL_BRANCH=${SSL_BRANCH:-$MBR_ENV}
-	export STAT_BRANCH=${STAT_BRANCH:-$MBR_ENV}
-	export MKAGENT_BRANCH=${MKAGENT_BRANCH:-$MBR_ENV}
-	REPOS=""
+
+	export MONITOR_BRANCH=${MONITOR_BRANCH:-$MBR_ENV}
+
+	export MKAGENT_BRANCH=latest
+
+	REPOS="\
+	   $service_dir/mkagent|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_mkagent.git|$MKAGENT_BRANCH \
+	 $mbr_root/gbc|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_gbc|$GBC_BRANCH \
+	 $mbr_root/gbc/bin/.asdf|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_asdf|$ASDF_BRANCH \
+"
 }
 
 _repo_private() {
@@ -112,9 +121,16 @@ _update_repos() {
 		echo "Need GIT_PRIVATE_READ_URL"
 		exit 1
 	fi
+	_repo
+	_update_sources $REPOS
+	_update_status=$?
+
 	_repo_private
 	_update_sources $REPOS_PRIVATE
-	_update_status=$?
+	if [ $_update_status -eq 0 ]; then
+		_update_status=$?
+	fi
+
 	_update_sources $REPOS_RUNTIME
 	if [ $_update_status -eq 0 ]; then
 		_update_status=$?
