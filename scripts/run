@@ -29,6 +29,7 @@ _repo() {
 		exit 1
 	fi
 
+
 	export ENV_BRANCH=${ENV_BRANCH:-$GIT_PRIVATE_BRANCH}
 
 	export ASDF_BRANCH=latest
@@ -40,6 +41,7 @@ _repo() {
 	 $mbr_root/gbc|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_gbc|$GBC_BRANCH \
 	 $mbr_root/gbc/bin/.asdf|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_asdf|$ASDF_BRANCH \
 "
+
 }
 
 _repo_private() {
@@ -47,6 +49,7 @@ _repo_private() {
 		echo "MBR_ENV missing"
 		exit 1
 	fi
+
 	if [ -z "$GIT_PRIVATE_READ_URL" ]; then
 		echo "GIT_PRIVATE_READ_URL missing"
 		exit 1
@@ -58,6 +61,7 @@ _repo_private() {
 
 	export ENV_BRANCH=${ENV_BRANCH:-$GIT_PRIVATE_BRANCH}
 	export SSL_BRANCH=${SSL_BRANCH:-$GIT_PRIVATE_BRANCH}
+
 
 	_env
 	REPOS_PRIVATE="\
@@ -120,6 +124,7 @@ _update_repos() {
 	if [ $_update_status -eq 0 ]; then
 		_update_status=$?
 	fi
+
 	return $_update_status
 }
 
@@ -154,14 +159,17 @@ _install() {
 _service_prometheus() {
 	if [ -f "$SITE_ROOT/vars/STAT_TYPE" ]; then
 		_node_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
+
 	fi
 
 	if [ -f "$SITE_ROOT/vars/STAT_NETWORK" ]; then
 		_network=$(cat $SITE_ROOT/vars/STAT_NETWORK)
+
 	fi
 
 	if [ -f "$SITE_ROOT/vars/STAT_BLOCKCHAIN" ]; then
 		_blockchain=$(cat $SITE_ROOT/vars/STAT_BLOCKCHAIN)
+
 	fi
 
 	if [ \( -z "$_node_type" \) -o \( -z "$_network" \) -o \( -z "$_blockchain" \) ]; then
@@ -229,7 +237,9 @@ _rebuild_conf() {
 
 _reload() {
 	pkill -f push.py
+
 	curl -X POST http://127.0.0.1:44444/__internal_prometheus/-/reload
+
 
 	$SITE_ROOT/cmd_server _update
 	$SITE_ROOT/cmd_server update
@@ -245,7 +255,9 @@ _discover_host() {
 	if [ -f "$SITE_ROOT/vars/STAT_TYPE" ]; then
 		_node_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
 
+
 	fi
+
 
 	if [ -f "$SITE_ROOT/vars/STAT_NETWORK" ]; then
 		_network=$(cat $SITE_ROOT/vars/STAT_NETWORK)
@@ -308,6 +320,7 @@ _save_env() {
 	if [ -n "$STAT_BLOCKCHAIN" ]; then echo $STAT_BLOCKCHAIN >$SITE_ROOT/vars/STAT_BLOCKCHAIN; fi
 }
 
+
 _update_tag() {
 	PORTAL_DOMAIN=portal.$DOMAIN
 	git="git -C $SITE_ROOT"
@@ -335,12 +348,14 @@ _update_tag() {
 
 }
 
+
 _update() {
 	echo "Update"
 
 	_save_env
 
 	_discover_host
+
 
 	_st_update=0
 	_update_repos
@@ -352,6 +367,7 @@ _update() {
 	fi
 
 	_rebuild_conf
+
 	return $_st_update
 }
 
