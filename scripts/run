@@ -30,12 +30,7 @@ _repo() {
 	fi
 
 	export ASDF_BRANCH=latest
-
 	export GBC_BRANCH=latest
-	export SSL_BRANCH=${SSL_BRANCH:-$MBR_ENV}
-
-	export MONITOR_BRANCH=${MONITOR_BRANCH:-$MBR_ENV}
-
 	export MKAGENT_BRANCH=latest
 
 	REPOS="\
@@ -59,20 +54,8 @@ _repo_private() {
 		exit 1
 	fi
 
-	export MKAGENT_BRANCH=${MKAGENT_BRANCH:-$MBR_ENV}
-
-	export GBC_BRANCH=${GBC_BRANCH:-$MBR_ENV}
-	export ASDF_BRANCH=${ASDF_BRANCH:-$MBR_ENV}
-	export GWMAN_BRANCH=${GWMAN_BRANCH:-$MBR_ENV}
-
 	export ENV_BRANCH=${ENV_BRANCH:-$GIT_PRIVATE_BRANCH}
 	export SSL_BRANCH=${SSL_BRANCH:-$GIT_PRIVATE_BRANCH}
-	export GWMANDEPLOY_BRANCH=${GWMANDEPLOY_BRANCH:-$GIT_PRIVATE_BRANCH}
-	export APIDEPLOY_BRANCH=${APIDEPLOY_BRANCH:-$GIT_PRIVATE_BRANCH}
-
-	export NODE_BRANCH=${NODE_BRANCH:-$MBR_ENV}
-	export GATEWAY_BRANCH=${GATEWAY_BRANCH:-$MBR_ENV}
-	export API_BRANCH=${API_BRANCH:-$MBR_ENV}
 
 	_env
 	REPOS_PRIVATE="\
@@ -166,17 +149,6 @@ _install() {
 	_supervisor
 }
 
-# _service_grafana() {
-# 	mkdir -p $SITE_ROOT/data/grafana
-# 	exec $GRAFANA_DIR/bin/grafana-server -config $SITE_ROOT/etc/grafana/stat.ini -homepath $GRAFANA_DIR
-# }
-
-# service config for Prometheus Node
-# _service_prometheus_node() {
-# 	mkdir -p $SITE_ROOT/data/prometheus_node
-# 	exec $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$SITE_ROOT/etc/prometheus/stat_node.yml --web.listen-address="127.0.0.1:44448" --web.external-url http://127.0.0.1:44448/__internal_prometheus_node --web.enable-lifecycle --storage.tsdb.path $SITE_ROOT/data/prometheus_node
-# }
-
 _service_prometheus() {
 	if [ -f "$SITE_ROOT/vars/STAT_TYPE" ]; then
 		_node_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
@@ -204,109 +176,6 @@ _service_prometheus() {
 	mkdir -p $_data
 	exec $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$_conf --web.listen-address="$_listen" --web.external-url http://$_listen/__internal_prometheus --web.enable-lifecycle --storage.tsdb.path $_data
 }
-
-# # service config for Prometheus Gateway
-# _service_prometheus_gw() {
-# 	mkdir -p $SITE_ROOT/data/prometheus_gw
-# 	exec $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$SITE_ROOT/etc/prometheus/stat_gw.yml --web.listen-address="127.0.0.1:44449" --web.external-url http://127.0.0.1:44449/__internal_prometheus_gw --web.enable-lifecycle --storage.tsdb.path $SITE_ROOT/data/prometheus_gw
-# }
-
-# _service_prometheus_gw_v1() {
-
-# 	_type=gw
-# 	mkdir -p $SITE_ROOT/data/prometheus/stat_${_type} $SITE_ROOT/data/run/conf/
-# 	_p=44200
-# 	find $SITE_ROOT/etc/prometheus/stat_${_type} -type f -iname '*.yml' | while read f; do
-# 		_t=$(basename $f .yml)
-# 		_url=127.0.0.1:${_p}
-# 		_data_dir=$SITE_ROOT/data/prometheus/stat_${_type}/$_t
-# 		cat >$SITE_ROOT/data/run/conf/${_type}_${_t}.conf <<EOF
-#     location /__internal_prometheus_${_type}_${_t}/ {
-#         # limit_except GET {
-#         #     deny all;
-#         # }
-#         proxy_set_header Host \$host;
-#         proxy_set_header X-Real-IP \$remote_addr;
-#         proxy_set_header X-Forwarded-For \$remote_addr;
-#         proxy_set_header X-Forwarded-Host \$remote_addr;
-#         proxy_pass_request_headers on;
-#         proxy_pass http://${_url}/__internal_prometheus_${_type}_${_t}/;
-#     }
-# EOF
-# 		mkdir -p $_data_dir
-# 		echo $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$f --web.listen-address="${_url}" --web.external-url http://${_url}/__internal_prometheus_${_type}_${_t} --web.enable-lifecycle --storage.tsdb.path $_data_dir
-# 		_p=$((_p + 1))
-# 	done >$SITE_ROOT/data/run/stat_${_type}.sh
-# 	cat $SITE_ROOT/data/run/stat_${_type}.sh | parallel -j$(wc -l $SITE_ROOT/data/run/stat_${_type}.sh | cut -d' ' -f1)
-# 	cd $SITE_ROOT
-# }
-
-# _service_prometheus_node_v1() {
-
-# 	_type=node
-# 	mkdir -p $SITE_ROOT/data/prometheus/stat_${_type} $SITE_ROOT/data/run/conf
-# 	_p=44100
-# 	find $SITE_ROOT/etc/prometheus/stat_${_type} -type f -iname '*.yml' | while read f; do
-# 		_t=$(basename $f .yml)
-# 		_url=127.0.0.1:${_p}
-# 		_data_dir=$SITE_ROOT/data/prometheus/stat_${_type}/$_t
-# 		cat >$SITE_ROOT/data/run/conf/${_type}_${_t}.conf <<EOF
-#     location /__internal_prometheus_${_type}_${_t}/ {
-#         # limit_except GET {
-#         #     deny all;
-#         # }
-#         proxy_set_header Host \$host;
-#         proxy_set_header X-Real-IP \$remote_addr;
-#         proxy_set_header X-Forwarded-For \$remote_addr;
-#         proxy_set_header X-Forwarded-Host \$remote_addr;
-#         proxy_pass_request_headers on;
-#         proxy_pass http://${_url}/__internal_prometheus_${_type}_${_t}/;
-#     }
-# EOF
-# 		mkdir -p $_data_dir
-# 		echo $PROMETHEUS_DIR/bin/prometheus --web.enable-admin-api --config.file=$f --web.listen-address="${_url}" --web.external-url http://${_url}/__internal_prometheus_${_type}_${_t} --web.enable-lifecycle --storage.tsdb.path $_data_dir
-# 		_p=$((_p + 1))
-# 	done >$SITE_ROOT/data/run/stat_${_type}.sh
-# 	cat $SITE_ROOT/data/run/stat_${_type}.sh | parallel -j$(wc -l $SITE_ROOT/data/run/stat_${_type}.sh | cut -d' ' -f1)
-# 	cd $SITE_ROOT
-# }
-
-# _update_listid_gw() {
-# 	_dir=$SITE_ROOT/etc/prometheus
-# 	mkdir -p $_dir/stat_gw
-# 	tmpd=$(mktemp -d)
-# 	curl -sk https://dapi.${DOMAIN}/deploy/info/gateway/listid | while read id user_id blockchain network _remain; do
-# 		if [ -z "$id" ]; then continue; fi
-# 		echo "          - ${id}.gw.mbr.${DOMAIN}" $tmpd/${blockchain}-${network}.yml
-# 		echo "          - ${id}.gw.mbr.${DOMAIN}" >>$tmpd/${blockchain}-${network}.yml
-# 	done
-# 	echo rm $_dir/stat_gw/*.yml
-# 	rm $_dir/stat_gw/*.yml
-# 	echo mv $tmpd/*.yml $_dir/stat_gw/
-# 	cat $tmpd/*.yml
-# 	mv $tmpd/*.yml $_dir/stat_gw/
-# 	rm -rf $tmpd
-# }
-# _update_listid_node() {
-# 	_dir=$SITE_ROOT/etc/prometheus
-# 	mkdir -p $_dir/stat_node
-# 	tmpd=$(mktemp -d)
-# 	curl -sk https://dapi.${DOMAIN}/deploy/info/node/listid | while read id user_id blockchain network _remain; do
-# 		if [ -z "$id" ]; then continue; fi
-# 		echo "          - ${id}.node.mbr.${DOMAIN}" $tmpd/${blockchain}-${network}.yml
-# 		echo "          - ${id}.node.mbr.${DOMAIN}" >>$tmpd/${blockchain}-${network}.yml
-# 	done
-# 	echo rm $_dir/stat_node/*.yml
-# 	rm $_dir/stat_node/*.yml
-# 	echo mv $tmpd/*.yml $_dir/stat_node/
-# 	cat $tmpd/*.yml
-# 	mv $tmpd/*.yml $_dir/stat_node/
-# 	rm -rf $tmpd
-# }
-# _update_listid() {
-# 	_update_listid_gw
-# 	_update_listid_node
-# }
 
 _rebuild_conf() {
 	if [ -f "$SITE_ROOT/vars/STAT_TYPE" ]; then
