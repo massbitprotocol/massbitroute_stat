@@ -125,11 +125,11 @@ _update_repos() {
 		_update_status=$_st
 	fi
 
-	_update_sources $REPOS_RUNTIME
-	_st=$?
-	if [ $_update_status -eq 0 ]; then
-		_update_status=$_st
-	fi
+	# _update_sources $REPOS_RUNTIME
+	# _st=$?
+	# if [ $_update_status -eq 0 ]; then
+	# 	_update_status=$_st
+	# fi
 
 	return $_update_status
 }
