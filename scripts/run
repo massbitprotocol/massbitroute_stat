@@ -19,6 +19,7 @@ ASDF=$SITE_ROOT/bin/.asdf/installs
 GRAFANA_DIR=$ASDF/grafana/$GRAFANA_VERSION
 PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSIO
 GIT_PUBLIC_URL="https://github.com"
+chmod +x $SITE_ROOT/scripts/run
 _repo() {
 	if [ -z "$MBR_ENV" ]; then
 		echo "MBR_ENV missing"
@@ -28,7 +29,6 @@ _repo() {
 		echo "GIT_PUBLIC_URL missing"
 		exit 1
 	fi
-
 
 	export ENV_BRANCH=${ENV_BRANCH:-$GIT_PRIVATE_BRANCH}
 
@@ -61,7 +61,6 @@ _repo_private() {
 
 	export ENV_BRANCH=${ENV_BRANCH:-$GIT_PRIVATE_BRANCH}
 	export SSL_BRANCH=${SSL_BRANCH:-$GIT_PRIVATE_BRANCH}
-
 
 	_env
 	REPOS_PRIVATE="\
@@ -247,7 +246,6 @@ _reload() {
 
 	curl -X POST http://127.0.0.1:44444/__internal_prometheus/-/reload
 
-
 	$SITE_ROOT/cmd_server _update
 	$SITE_ROOT/cmd_server update
 	$SITE_ROOT/cmd_server start all
@@ -262,9 +260,7 @@ _discover_host() {
 	if [ -f "$SITE_ROOT/vars/STAT_TYPE" ]; then
 		_node_type=$(cat $SITE_ROOT/vars/STAT_TYPE)
 
-
 	fi
-
 
 	if [ -f "$SITE_ROOT/vars/STAT_NETWORK" ]; then
 		_network=$(cat $SITE_ROOT/vars/STAT_NETWORK)
@@ -327,7 +323,6 @@ _save_env() {
 	if [ -n "$STAT_BLOCKCHAIN" ]; then echo $STAT_BLOCKCHAIN >$SITE_ROOT/vars/STAT_BLOCKCHAIN; fi
 }
 
-
 _update_tag() {
 	PORTAL_DOMAIN=portal.$DOMAIN
 	git="git -C $SITE_ROOT"
@@ -355,14 +350,12 @@ _update_tag() {
 
 }
 
-
 _update() {
 	echo "Update"
 
 	_save_env
 
 	_discover_host
-
 
 	_st_update=0
 	_update_repos
@@ -387,7 +380,7 @@ _monitor() {
 	is_reload=$?
 
 	if [ $is_reload -ne 0 ]; then
-		$0 _reload
+		bash $0 _reload
 	fi
 }
 
