@@ -17,7 +17,7 @@ GRAFANA_VERSION=v8.2.1
 PROMETHEUS_VERSION=v2.30.3
 ASDF=$SITE_ROOT/bin/.asdf/installs
 GRAFANA_DIR=$ASDF/grafana/$GRAFANA_VERSION
-PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSIO
+PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSION
 GIT_PUBLIC_URL="https://github.com"
 chmod +x $SITE_ROOT/scripts/run
 _repo() {
@@ -109,9 +109,10 @@ _update_repos() {
 		echo "Need GIT_PRIVATE_READ_URL"
 		exit 1
 	fi
-	_repo
+
 	_update_status=0
 
+	_repo
 	_update_sources $REPOS
 	_st=$?
 	if [ $_update_status -eq 0 ]; then
