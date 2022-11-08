@@ -66,10 +66,6 @@ our $http_config = <<'_EOC_';
         
 
 --_INCLUDE_SITES_LUAWINIT_\n    ';
-map $http_origin $allow_origin {
-    include /massbit/massbitroute/app/src/sites/services/stat/sites/../cors-whitelist.map;
-    default '';
-}
 map $http_upgrade $connection_upgrade {
     default upgrade;
     '' close;
