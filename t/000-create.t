@@ -19,7 +19,7 @@ our $main_config = <<'_EOC_';
 env BIND_ADDRESS;
 _EOC_
 
-our $http_config = <<'_EOC_'
+our $http_config = <<'_EOC_';
   server_tokens off;
     map_hash_max_size 128;
     map_hash_bucket_size 128;
