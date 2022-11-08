@@ -99,6 +99,6 @@ __DATA__
 --- http_config eval: $::http_config
 --- config eval: $::config
 --- request
-GET /__internal_prometheus/
+GET /__internal_prometheus/graph
 --- error_code: 200
 --- no_error_log
