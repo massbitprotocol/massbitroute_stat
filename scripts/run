@@ -17,8 +17,11 @@ GRAFANA_VERSION=v8.2.1
 PROMETHEUS_VERSION=v2.30.3
 ASDF=$SITE_ROOT/bin/.asdf/installs
 GRAFANA_DIR=$ASDF/grafana/$GRAFANA_VERSION
-PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSIO
+
+PROMETHEUS_DIR=$ASDF/prometheus/$PROMETHEUS_VERSION
 GIT_PUBLIC_URL="https://github.com"
+chmod +x $SITE_ROOT/scripts/run
+
 _repo() {
 	if [ -z "$MBR_ENV" ]; then
 		echo "MBR_ENV missing"
@@ -42,7 +45,56 @@ _repo() {
 	 $mbr_root/gbc/bin/.asdf|$GIT_PUBLIC_URL/massbitprotocol/massbitroute_asdf|$ASDF_BRANCH \
 "
 
+
 }
+
+_run_test() {
+	cd $SITE_ROOT
+	export PATH=$PATH:$SITE_ROOT/bin/openresty/nginx/sbin
+
+	supervisorctl stop mbr_${TYPE}_monitor
+
+	if [ ! -f "$SITE_ROOT/src/env.lua" ];then
+	   touch $SITE_ROOT/src/env.lua
+	   else
+	       > $SITE_ROOT/src/env.lua
+	fi
+	   
+       
+
+	env_src=$SITE_ROOT/env/env.lua
+	if [ -f "$env_src" ]; then
+		sed /PARTNER_ID/d -i $env_src
+		sed /SID/d -i $env_src
+		sed '/}/i ["PARTNER_ID"]="fc78b64c5c33f3f270700b0c4d3e7998188035ab",' -i $env_src
+		sed '/}/i ["SID"]="403716b0f58a7d6ddec769f8ca6008f2c1c0cea6"' -i $env_src
+
+		cp $env_src $SITE_ROOT/src/env.lua
+		_reload
+	fi
+
+	if [ $# -ne 0 ]; then
+		prove -r $@
+	else
+		prove -r t
+	fi
+
+
+}
+
+_install_test() {
+	apt update
+	apt install -y make
+	export PERL_MM_USE_DEFAULT=1
+	yes | cpan -i Test::Nginx
+	cd $SITE_ROOT
+	ls -d $SITE_ROOT/.cpan/build/* /root/.cpan/build/* | while read d; do
+		cd $d
+		make install
+		cd -
+	done
+}
+
 
 _repo_private() {
 	if [ -z "$MBR_ENV" ]; then
@@ -110,20 +162,30 @@ _update_repos() {
 		echo "Need GIT_PRIVATE_READ_URL"
 		exit 1
 	fi
+
+
+	_update_status=0
+
 	_repo
 	_update_sources $REPOS
-	_update_status=$?
+	_st=$?
+	if [ $_update_status -eq 0 ]; then
+		_update_status=$_st
+	fi
 
 	_repo_private
 	_update_sources $REPOS_PRIVATE
+	_st=$?
 	if [ $_update_status -eq 0 ]; then
-		_update_status=$?
+		_update_status=$_st
 	fi
 
-	_update_sources $REPOS_RUNTIME
-	if [ $_update_status -eq 0 ]; then
-		_update_status=$?
-	fi
+	# _update_sources $REPOS_RUNTIME
+	# _st=$?
+	# if [ $_update_status -eq 0 ]; then
+	# 	_update_status=$_st
+	# fi
+
 
 	return $_update_status
 }
@@ -359,11 +421,16 @@ _update() {
 
 	_st_update=0
 	_update_repos
-	_st_update=$?
+	_st=$?
+	if [ $_st_update -eq 0 ]; then
+		_st_update=$_st
+	fi
 
 	_update_tag
+	_st=$?
 	if [ $_st_update -eq 0 ]; then
-		_st_update=$?
+		_st_update=$_st
+
 	fi
 
 	_rebuild_conf
@@ -376,7 +443,7 @@ _monitor() {
 	is_reload=$?
 
 	if [ $is_reload -ne 0 ]; then
-		$0 _reload
+		bash $0 _reload
 	fi
 }
 
